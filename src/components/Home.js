@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Card, CardContent, Typography } from '@mui/material';
 import {supabase} from '../supabaseClient';
 
 const Home = () => {
+  const { userId } = useParams();
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
@@ -11,7 +12,8 @@ const Home = () => {
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .order('date', { ascending: true });
+        .eq('host_user_id',userId)
+        .order('event_date', { ascending: true });
       
       if (error) {
         console.error('Error fetching events:', error);
@@ -28,12 +30,11 @@ const Home = () => {
       <Typography variant="h4">Hello Tim</Typography>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, marginTop: 20 }}>
         {events.map(event => (
-          <Link to={`/event/${event.id}`} key={event.id} style={{ textDecoration: 'none' }}>
+          <Link to={`/event/${event.event_id}`} key={event.event_id} style={{ textDecoration: 'none' }}>
             <Card style={{ width: 300 }}>
               {/* <img src="path_to_image" alt="event" style={{ width: '100%' }} /> */}
               <CardContent>
-                <Typography variant="h6">{event.title}</Typography>
-                <Typography variant="body2">{new Date(event.date).toLocaleDateString()}</Typography>
+                <Typography variant="body2">{new Date(event.event_date).toLocaleDateString()}</Typography>
                 <Typography variant="body2">{event.description}</Typography>
               </CardContent>
             </Card>

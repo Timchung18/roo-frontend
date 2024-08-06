@@ -1,9 +1,6 @@
--- Add UUID extension if not already installed
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Create Users table
+-- Users Table
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    user_id SERIAL PRIMARY KEY,
     first_name VARCHAR(255),  -- User's given name
     last_name VARCHAR(255),   -- User's family name
     email VARCHAR(255),       -- User's email address
@@ -12,61 +9,81 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Events table
-CREATE TABLE events (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
-    title VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
-    image VARCHAR(255),  -- Assuming file path storage
-    type VARCHAR(50) NOT NULL,  -- 'public' or 'private'
-    location VARCHAR(255) NOT NULL,
-    date DATE NOT NULL,
-    time TIME,
-    location_of_attendees_text TEXT,
-    location_of_attendees_position TEXT,
-    deadline_date DATE,
-    funding_per_person DECIMAL,
-    min_number_of_attendees INT,
-    allow_more_attendees BOOLEAN DEFAULT FALSE,
+-- Restaurants Table
+CREATE TABLE restaurants (
+    restaurant_id SERIAL PRIMARY KEY,
+    owner_user_id INT NOT NULL REFERENCES users(user_id),
+    address TEXT NOT NULL,
+    description TEXT,
+    hour_open TIME NOT NULL,
+    hour_closed TIME NOT NULL,
+    rating DECIMAL(3, 1),
+    name VARCHAR(100) NOT NULL,
+    cuisine VARCHAR(50),
+    price_per_seat DECIMAL(10, 2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- -- Create Invitations table
--- CREATE TABLE invitations (
---     id SERIAL PRIMARY KEY,
---     event_id INT REFERENCES events(id),
---     user_id INT REFERENCES users(id),
---     invited_user INT NOT NULL REFERENCES users(id),
---     invitation_code VARCHAR(255) NOT NULL,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
+-- Tables Table
+CREATE TABLE tables (
+    table_id SERIAL PRIMARY KEY,
+    restaurant_id INT NOT NULL REFERENCES restaurants(restaurant_id),
+    min_number_of_seats INT NOT NULL,
+    max_number_of_seats INT NOT NULL,
+    table_number VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- -- Create RSVP table
--- CREATE TABLE rsvp (
---     id SERIAL PRIMARY KEY,
---     event_id INT NOT NULL REFERENCES events(id),
---     status VARCHAR(10) NOT NULL CHECK (status IN ('yes', 'maybe', 'no')),
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
+-- Events Table
+CREATE TABLE events (
+    event_id SERIAL PRIMARY KEY,
+    host_user_id INT NOT NULL REFERENCES users(user_id),
+    number_of_seats_taken INT NOT NULL,
+    table_id INT NOT NULL REFERENCES tables(table_id),
+    event_date DATE NOT NULL,
+    event_time TIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- -- Create Auth table
--- CREATE TABLE auth (
---     id SERIAL PRIMARY KEY,
---     username VARCHAR(255) NOT NULL,
---     password VARCHAR(255) NOT NULL,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
+-- Joiners Table
+CREATE TABLE joiners (
+    joiner_id SERIAL PRIMARY KEY,
+    event_id INT NOT NULL REFERENCES events(event_id),
+    joiner_user_id INT NOT NULL REFERENCES users(user_id)
+);
 
--- -- Create Phone Verifications table
--- CREATE TABLE phone_verifications (
---     id SERIAL PRIMARY KEY,
---     phone_number VARCHAR(255) NOT NULL,
---     verification_code VARCHAR(255) NOT NULL,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
+-- Function to update updated_at column
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = NOW();
+   RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql';
+
+-- Trigger for users table
+CREATE TRIGGER update_users_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+-- Trigger for restaurants table
+CREATE TRIGGER update_restaurants_updated_at
+BEFORE UPDATE ON restaurants
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+-- Trigger for tables table
+CREATE TRIGGER update_tables_updated_at
+BEFORE UPDATE ON tables
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+-- Trigger for events table
+CREATE TRIGGER update_events_updated_at
+BEFORE UPDATE ON events
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
