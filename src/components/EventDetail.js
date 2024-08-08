@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Typography, Box } from '@mui/material';
+import { Button, Typography, Box, Link } from '@mui/material';
 import {supabase} from '../supabaseClient';
 
 const EventDetail = () => {
   const { eventId } = useParams();
   const [event, setEvent] = useState(null);
+  const [restaurant, setRestaurant] = useState(null);
+
+  const baseUrl = "http://localhost:3000/event/";
+  const uniqueUrl = `${baseUrl}`;
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -22,15 +26,32 @@ const EventDetail = () => {
       }
     };
 
-    const fetchInvitation = async () => {
-      const {data, error} = await supabase
-        .from('invitations')
-        .select('x')
-        .eq('id')
-
+    const fetchRestaurant = async () => {
+      const { tableData, tableError } = await supabase
+        .from('tables')
+        .select('*')
+        .eq('table_id', event.table_id)
+        .single();
+      
+      if (tableError) {
+        console.error('Error fetching table:', tableError);
+      } else {
+        const {restaurantData, restaurantError} = await supabase
+          .from('restaurants')
+          .select('*')
+          .eq('restaurant_id', tableData[0].restaurant_id);
+        if (restaurantError) {
+          console.error('Error fetching restaurant:', restaurantError);
+        } else {
+          console.log(restaurantData[0]);
+          setRestaurant(restaurantData[0]);
+        }
+      }
     };
-
+    
+   
     fetchEvent();
+    // fetchRestaurant();
   }, []);
 
   if (!event) {
@@ -53,10 +74,13 @@ const EventDetail = () => {
       {/* {event.image && <img src={event.image} style={imageStyles}/>} */}
       <Box marginTop={2}>
         <Typography variant="body1">Who's going?</Typography>
-        <Typography variant="body2">{`0/${event.number_of_seats_taken} Spots Reserved`}</Typography>
-        <Typography variant="body2">{`RSVP Fee $${event.number_of_seats_taken}`}</Typography>
-        <Typography variant="body1" marginTop={2}>You've raised $0</Typography>
-        <Button variant="contained" color="primary" style={{ marginTop: 10 }}>Send invites</Button>
+        <Typography variant="body2">{`${event.number_of_seats_taken} / ${event.number_of_seats_requested} Spots Reserved`}</Typography>
+        <Typography variant="body2">{`RSVP Fee $0`}</Typography>
+        <Typography variant="body1">Restaurant: </Typography>
+        <Typography variant="body2">Restaurant Address: </Typography>
+        {/* <Typography variant="body1" marginTop={2}>You've raised $0</Typography> */}
+        {/* <Link to={`${baseUrl}${event.link}`}>Invite link</Link> */}
+        {/* <Button variant="contained" color="primary" style={{ marginTop: 10 }}>Send invites</Button> */}
       </Box>
     </Box>
   );
