@@ -56,6 +56,10 @@ const RestaurantHomePage = () => {
       <p><strong>Rating:</strong> {restaurant.rating}</p>
       <p><strong>Hours:</strong> {restaurant.hour_open} - {restaurant.hour_closed}</p>
 
+      {/* <Link to="/create-table"> */}
+        <button>Add New Table</button>
+      {/* </Link> */}
+
       <h2>Tables</h2>
       {tables.length > 0 ? (
         <table>
