@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 
-const CreateTable = () => {
+const CreateTable = ({user}) => {
   const [minSeats, setMinSeats] = useState('');
   const [maxSeats, setMaxSeats] = useState('');
   const [tableNumber, setTableNumber] = useState('');
@@ -29,8 +29,8 @@ const CreateTable = () => {
 
       if (error) throw error;
 
-      // Redirect to the home page after successful creation
-      navigate('/');
+      // Redirect to the restaurant home page after successful creation
+      navigate(`/restaurant/${user.user_id}`);
     } catch (err) {
       setError(err.message);
     }

@@ -1,13 +1,29 @@
-// src/components/Login.js
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import {supabase} from '../supabaseClient';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../supabaseClient';
 
-const Login = ({setUser}) => {
+const RestaurantLogin = ({ setRestaurantUser }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+//   const handleSubmit1 = async (event) => {
+//     event.preventDefault();
+//     try {
+//       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+//       if (error) {
+//         setError(error.message);
+//         console.log(error.message);
+//       } else {
+//         setRestaurantUser(data.user);
+//         navigate(`/restaurant-home/${data.user.id}`);
+//       }
+//     } catch (error) {
+//       setError('An unexpected error occurred. Please try again.');
+//       console.log(error.message);
+//     }
+//   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -23,8 +39,9 @@ const Login = ({setUser}) => {
       } else {
         if (data.length === 1) {
             console.log(data[0].first_name, data[0].last_name);
-            setUser(data[0]);
-            navigate(`/home/${data[0].user_id}`);
+            setRestaurantUser(data[0]);
+            
+            navigate(`/restaurant/${data[0].user_id}`);
         } else {
             setError("No account with this email was found");
             console.log("No account with this email was found");
@@ -37,7 +54,7 @@ const Login = ({setUser}) => {
 
   return (
     <div>
-      <h2>Login</h2>
+      <h2>Restaurant Owner Login</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email:</label>
@@ -57,13 +74,11 @@ const Login = ({setUser}) => {
             required
           />
         </div>
+        {error && <p>{error}</p>}
         <button type="submit">Login</button>
       </form>
-      <div>
-        <p>Are you a restaurant owner? <Link to="/restaurant/login">Login here</Link></p>
-      </div>
     </div>
   );
 };
 
-export default Login;
+export default RestaurantLogin;

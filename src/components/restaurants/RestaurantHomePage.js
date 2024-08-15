@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { Link } from 'react-router-dom';
+import { supabase } from '../../supabaseClient';
 
 const RestaurantHomePage = () => {
   const [restaurant, setRestaurant] = useState(null);
@@ -56,9 +57,9 @@ const RestaurantHomePage = () => {
       <p><strong>Rating:</strong> {restaurant.rating}</p>
       <p><strong>Hours:</strong> {restaurant.hour_open} - {restaurant.hour_closed}</p>
 
-      {/* <Link to="/create-table"> */}
+      <Link to="/restaurant/createTable">
         <button>Add New Table</button>
-      {/* </Link> */}
+      </Link>
 
       <h2>Tables</h2>
       {tables.length > 0 ? (
