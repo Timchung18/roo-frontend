@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Typography, Box, Link } from '@mui/material';
-import {supabase} from '../supabaseClient';
+import { Button, Typography, Box, FormControl, RadioGroup, FormControlLabel, Radio } from '@mui/material';
+import { supabase } from '../supabaseClient';
 
 const EventDetail = () => {
   const { eventId } = useParams();
   const [event, setEvent] = useState(null);
-  const [restaurant, setRestaurant] = useState(null);
-
-  const baseUrl = "http://localhost:3000/event/";
-  const uniqueUrl = `${baseUrl}`;
+  const [attendance, setAttendance] = useState(null);
+  const [userContribution, setUserContribution] = useState(0);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -23,36 +22,47 @@ const EventDetail = () => {
         console.error('Error fetching event:', error);
       } else {
         setEvent(data);
+        fetchAttendance(data.event_id); // Fetch attendance when event data is available
       }
     };
 
-    const fetchRestaurant = async () => {
-      const { tableData, tableError } = await supabase
-        .from('tables')
+    const fetchAttendance = async (event_id) => {
+      const userId = supabase.auth.user().id;
+      setUserId(userId);
+
+      const { data, error } = await supabase
+        .from('rsvp')
         .select('*')
-        .eq('table_id', event.table_id)
+        .eq('event_id', event_id)
+        .eq('user_id', userId)
         .single();
       
-      if (tableError) {
-        console.error('Error fetching table:', tableError);
+      if (error) {
+        console.error('Error fetching attendance:', error);
       } else {
-        const {restaurantData, restaurantError} = await supabase
-          .from('restaurants')
-          .select('*')
-          .eq('restaurant_id', tableData[0].restaurant_id);
-        if (restaurantError) {
-          console.error('Error fetching restaurant:', restaurantError);
-        } else {
-          console.log(restaurantData[0]);
-          setRestaurant(restaurantData[0]);
-        }
+        setAttendance(data.attendance_status);
+        setUserContribution(data.amount_contributed);
       }
     };
-    
-   
+
     fetchEvent();
-    // fetchRestaurant();
-  }, []);
+  }, [eventId]);
+
+  const handleAttendanceChange = async (event) => {
+    const newStatus = event.target.value;
+
+    const { data, error } = await supabase
+      .from('rsvp')
+      .update({ attendance_status: newStatus })
+      .eq('event_id', eventId)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error updating attendance:', error);
+    } else {
+      setAttendance(newStatus);
+    }
+  };
 
   if (!event) {
     return <Typography>Loading...</Typography>;
@@ -61,26 +71,30 @@ const EventDetail = () => {
   const imageStyles = {
     maxWidth: '100%',
     height: 'auto',
-    maxHeight: '400px', // adjust based on your needs
+    maxHeight: '400px',
     display: 'block',
-    margin: '0 auto', // Center the image
-};
+    margin: '0 auto',
+  };
 
   return (
     <Box padding={3} textAlign="center">
-      {/* This will be the restaurant name <Typography variant="h4">{event.title}</Typography> */}
+      <Typography variant="h4">{event.title}</Typography>
       <Typography variant="body1">{new Date(event.event_date).toLocaleDateString()}</Typography>
       <Typography variant="body1">{event.event_description}</Typography>
-      {/* {event.image && <img src={event.image} style={imageStyles}/>} */}
+      {event.image && <img src={event.image} style={imageStyles} />}
       <Box marginTop={2}>
         <Typography variant="body1">Who's going?</Typography>
         <Typography variant="body2">{`${event.number_of_seats_taken} / ${event.number_of_seats_requested} Spots Reserved`}</Typography>
         <Typography variant="body2">{`RSVP Fee $0`}</Typography>
-        <Typography variant="body1">Restaurant: </Typography>
-        <Typography variant="body2">Restaurant Address: </Typography>
-        {/* <Typography variant="body1" marginTop={2}>You've raised $0</Typography> */}
-        {/* <Link to={`${baseUrl}${event.link}`}>Invite link</Link> */}
-        {/* <Button variant="contained" color="primary" style={{ marginTop: 10 }}>Send invites</Button> */}
+        <Typography variant="body1">Your Attendance:</Typography>
+        <FormControl component="fieldset">
+          <RadioGroup row value={attendance || ''} onChange={handleAttendanceChange}>
+            <FormControlLabel value="yes" control={<Radio />} label="Yes" />
+            <FormControlLabel value="no" control={<Radio />} label="No" />
+            <FormControlLabel value="maybe" control={<Radio />} label="Maybe" />
+          </RadioGroup>
+        </FormControl>
+        <Typography variant="body1" marginTop={2}>You've contributed: ${userContribution.toFixed(2)}</Typography>
       </Box>
     </Box>
   );
