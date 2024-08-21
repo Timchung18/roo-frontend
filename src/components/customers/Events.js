@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, Typography, Button } from '@mui/material';
-import {supabase} from '../supabaseClient';
+import {supabase} from '../../supabaseClient';
 
-const Home = ({user}) => {
-  const { userId } = useParams();
+const Events = ({user}) => {
+  const userId = user.user_id;
   const navigate = useNavigate();
   const [hostingEvents, setHostingEvents] = useState([]);
   const [joiningEvents, setJoiningEvents] = useState([]);
@@ -90,4 +90,4 @@ const Home = ({user}) => {
   );
 };
 
-export default Home;
+export default Events;

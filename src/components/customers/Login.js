@@ -1,7 +1,7 @@
 // src/components/Login.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import {supabase} from '../supabaseClient';
+import {supabase} from '../../supabaseClient';
 
 const Login = ({setUser}) => {
   const [email, setEmail] = useState('');
@@ -24,7 +24,7 @@ const Login = ({setUser}) => {
         if (data.length === 1) {
             console.log(data[0].first_name, data[0].last_name);
             setUser(data[0]);
-            navigate(`/home/${data[0].user_id}`);
+            navigate(`/`);
         } else {
             setError("No account with this email was found");
             console.log("No account with this email was found");

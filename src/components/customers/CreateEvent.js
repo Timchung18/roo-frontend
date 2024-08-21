@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, MenuItem, Typography } from '@mui/material';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
 const CreateEvent = ({user}) => {
