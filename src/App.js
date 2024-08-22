@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import './index.css';
+
 import Events from './components/customers/Events';
 import EventDetail from './components/customers/EventDetail';
 import Login from './components/customers/Login';
@@ -9,6 +11,7 @@ import CreateTable from './components/restaurants/CreateTable';
 import RestaurantLogin from './components/restaurants/RestaurantLogin';
 import { useState } from 'react';
 import { Restaurant } from '@mui/icons-material';
+
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
