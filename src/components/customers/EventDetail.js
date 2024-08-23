@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Typography, Box, FormControl, RadioGroup, FormControlLabel, Radio } from '@mui/material';
+import { Button, Typography, Box, FormControl, RadioGroup, FormControlLabel, Radio, LinearProgress } from '@mui/material';
+import { Search, Loader2, Link2, ArrowLeft, MapPin, Calendar, AlertCircle, Pencil } from "lucide-react"
+
 import { supabase } from '../../supabaseClient';
 
 const EventDetail = ({user}) => {
   const { eventId } = useParams();
   const [event, setEvent] = useState(null);
   const [attendance, setAttendance] = useState(null);
+  const [restaurant, setRestaurant] = useState(null);
   const [userContribution, setUserContribution] = useState(0);
   // const [userId, setUserId] = useState(null);
 
@@ -30,7 +33,7 @@ const EventDetail = ({user}) => {
     const updateJoiners = async () => {
       const {data, error} = await supabase
         .from('joiners')
-        .update({ rsvp_status: newRsvpStatus })
+        .update({ response: newRsvpStatus })
         .eq('joiner_user_id', user.user_id)
         .eq('event_id', eventId);
 
@@ -40,6 +43,8 @@ const EventDetail = ({user}) => {
         console.log('RSVP status updated successfully');
       }
     }
+
+    updateJoiners();
   };
 
   const handleCancelClick = () => {
@@ -59,7 +64,9 @@ const EventDetail = ({user}) => {
         console.error('Error fetching event:', error);
       } else {
         setEvent(data);
-        fetchAttendance(data.event_id); // Fetch attendance when event data is available
+        console.log(data);
+        // fetchAttendance(data.event_id); // Fetch attendance when event data is available
+        await fetchRestaurant(data.restaurant_id);
       }
     };
 
@@ -77,24 +84,24 @@ const EventDetail = ({user}) => {
       }
     };
 
+    const fetchRestaurant = async (restaurant_id) => {
+      const { data, error } = await supabase
+        .from('restaurants')
+        .select('*')
+        .eq('restaurant_id', restaurant_id);
+      
+      if (error) {
+        console.error('Error fetching restaurant data:', error);
+      } else {
+        setRestaurant(data[0]);
+        console.log(restaurant);
+        
+      }
+    };
+
     fetchEvent();
   }, []);
 
-  // const handleAttendanceChange = async (event) => {
-  //   const newStatus = event.target.value;
-
-  //   const { data, error } = await supabase
-  //     .from('rsvp')
-  //     .update({ attendance_status: newStatus })
-  //     .eq('event_id', eventId)
-  //     .eq('user_id', userId);
-
-  //   if (error) {
-  //     console.error('Error updating attendance:', error);
-  //   } else {
-  //     setAttendance(newStatus);
-  //   }
-  // };
 
   if (!event) {
     return <Typography>Loading...</Typography>;
@@ -108,29 +115,78 @@ const EventDetail = ({user}) => {
     margin: '0 auto',
   };
 
+  // Format the date string
+  const formattedDate = new Date(event.event_date_time).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  // Format the time string
+  const formattedTime = new Date(event.event_date_time).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+
   return (
-    <Box padding={3} textAlign="center">
-      <Typography variant="h4">{event.description}</Typography>
-      <Typography variant="body1">{new Date(event.event_date_time).toLocaleDateString()}</Typography>
-      <Typography variant="body1">{new Date(event.event_date_time).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})}</Typography>
-      <Typography variant="body1">{event.event_description}</Typography>
-      {event.image && <img src={event.image} style={imageStyles} />}
+    <Box padding={3} margin="0 auto" textAlign="left" maxWidth="600px">
+      <Typography variant="h4" fontWeight="bold">{event.description}</Typography>
+      <Box display="flex" justifyContent="left" alignItems="center" marginTop={1}>
+        <Calendar size={20} />
+        <Typography variant="body1" marginLeft={1}>
+          {formattedDate}, {formattedTime}
+        </Typography>
+      </Box>
+      {restaurant && (
+        <Box display="flex" justifyContent="left" alignItems="center" marginTop={1}>
+          <MapPin size={20} />
+          <Typography variant="body1" marginLeft={1}>{restaurant.name}, {restaurant.address}</Typography>
+        </Box>
+      )}
       
-      <div style={{ marginTop: '20px' }}>
-        <h3>Current RSVP Status: <span style={{ color: rsvpStatus === 'Yes' ? 'green' : rsvpStatus === 'No' ? 'red' : 'orange' }}>{rsvpStatus}</span></h3>
+      {event.image && <img src={event.image} style={imageStyles} />}
+      <Box marginTop={2}>
+        <Typography variant="h5" fontWeight="550" letterSpacing={1}>Who's going?</Typography>
+        <Typography variant="body2">{`${event.number_of_seats_taken} / ${event.number_of_seats_requested} Spots Reserved`}</Typography>
+        
+        <LinearProgress
+          variant="determinate"
+          value={(event.number_of_seats_taken / event.number_of_seats_requested) * 100}
+          sx={{ height: 10, borderRadius: 5, bgcolor: 'lightgray', '& .MuiLinearProgress-bar': { bgcolor: '#F28934' } }}
+        />
+      </Box>
+      
+      <Box marginTop={2}>
+        {restaurant && (
+          <Box marginTop={1}>
+            <Typography variant="h5" display="inline" fontWeight="550" letterSpacing={1}>RSVP Fee </Typography>
+            <Typography variant="h5" display="inline" > {`$${restaurant.price_per_seat}`}</Typography>
+          </Box>
+        )}
+        <Typography variant="h5" display="inline" marginTop={4} fontWeight="550" letterSpacing={1}>You've raised: </Typography>
+        <Typography variant="h5" display="inline">{`$${0}`}</Typography>
+      </Box>
+
+      <Box marginTop={4} display="flex" justifyContent="center" alignItems="center" flexDirection="column">
+        <Typography variant="h5">RSVP Status: <span style={{ color: rsvpStatus === 'Yes' ? 'green' : rsvpStatus === 'No' ? 'red' : 'orange' }}>{rsvpStatus}</span></Typography>
         {!isEditing ? (
           <button onClick={handleEditClick} style={{ padding: '10px 20px', marginTop: '10px', cursor: 'pointer' }}>Edit RSVP</button>
         ) : (
-          <div style={{ marginTop: '20px' }}>
-            <div>
+          <Box marginTop={2}>
+            <Box>
               <button
                 onClick={() => handleRsvpChange('Yes')}
                 style={{
-                  backgroundColor: newRsvpStatus === 'Yes' ? 'green' : 'lightgray',
+                  backgroundColor: newRsvpStatus === 'Yes' ? '#F28934' : '#FFA500' ,
                   color: 'white',
                   padding: '10px 20px',
                   margin: '5px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  borderRadius: '50px',
+                  border: 'none',
                 }}
               >
                 Yes
@@ -138,11 +194,13 @@ const EventDetail = ({user}) => {
               <button
                 onClick={() => handleRsvpChange('No')}
                 style={{
-                  backgroundColor: newRsvpStatus === 'No' ? 'red' : 'lightgray',
+                  backgroundColor: newRsvpStatus === 'No' ? '#F28934' : '#FFA500',
                   color: 'white',
                   padding: '10px 20px',
                   margin: '5px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  borderRadius: '50px',
+                  border: 'none',
                 }}
               >
                 No
@@ -150,29 +208,26 @@ const EventDetail = ({user}) => {
               <button
                 onClick={() => handleRsvpChange('Maybe')}
                 style={{
-                  backgroundColor: newRsvpStatus === 'Maybe' ? 'orange' : 'lightgray',
+                  backgroundColor: newRsvpStatus === 'Maybe' ? '#F28934' : '#FFA500',
                   color: 'white',
                   padding: '10px 20px',
                   margin: '5px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  borderRadius: '50px',
+                  border: 'none',
                 }}
               >
                 Maybe
               </button>
-            </div>
-            <div style={{ marginTop: '10px' }}>
+            </Box>
+            <Box marginTop={2}>
               <button onClick={handleSaveClick} style={{ padding: '10px 20px', marginRight: '10px', cursor: 'pointer' }}>Save</button>
               <button onClick={handleCancelClick} style={{ padding: '10px 20px', cursor: 'pointer' }}>Cancel</button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
-        <Box marginTop={2}>
-          <Typography variant="body1">Who's going?</Typography>
-          <Typography variant="body2">{`${event.number_of_seats_taken} / ${event.number_of_seats_requested} Spots Reserved`}</Typography>
-          <Typography variant="body2">{`RSVP Fee $0`}</Typography>
-          <Typography variant="body1" marginTop={2}>You've contributed: ${userContribution.toFixed(2)}</Typography>
-        </Box>
-      </div>
+      </Box>
+      
     </Box>
   );
 };

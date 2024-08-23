@@ -40,6 +40,7 @@ const CreateEvent = ({user}) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     // check if there is a table available at the restaurant
+    console.log("restID", eventData.restaurantId);
     const { data: tableQueryRes, error: tableQueryErr } = await supabase
       .from('tables')
       .select('*')
@@ -53,27 +54,9 @@ const CreateEvent = ({user}) => {
       console.log('API fetch successful');
     }
     if (tableQueryRes) {
-      // console.log(tableQueryRes[0]);
-      
-
-    } else {
-      console.log("no tables available");
-    }
-
-    // add the event to the events table
-    const eventObject = {
-        host_user_id: user.user_id,
-        event_date: eventData.eventDate,
-        event_time: eventData.eventTime,
-        description: eventData.eventDescription,
-        number_of_seats_taken: 1,
-        number_of_seats_requested: eventData.numberOfSeats,
-        table_id: tableQueryRes.table_id,
-    }
-    console.log(eventObject);
-    const { data: insertEventData, error: insertEventError } = await supabase
-      .from('events')
-      .insert([{
+      console.log(tableQueryRes);
+      // add the event to the events table
+      const eventObject = {
         host_user_id: user.user_id,
         event_date: eventData.eventDate,
         event_time: eventData.eventTime,
@@ -81,18 +64,37 @@ const CreateEvent = ({user}) => {
         number_of_seats_taken: 1,
         number_of_seats_requested: eventData.numberOfSeats,
         table_id: tableQueryRes[0].table_id,
-      }])
-      .select();
+      }
+      console.log(eventObject);
+      const { data: insertEventData, error: insertEventError } = await supabase
+        .from('events')
+        .insert([{
+          host_user_id: user.user_id,
+          event_date: eventData.eventDate,
+          event_time: eventData.eventTime,
+          description: eventData.eventDescription,
+          number_of_seats_taken: 1,
+          number_of_seats_requested: eventData.numberOfSeats,
+          table_id: tableQueryRes[0].table_id,
+        }])
+        .select();
 
-    if (insertEventError) {
-      console.error('Error creating event:', insertEventError);
-    } else {
-      console.log(insertEventData[0].link);
-      const baseUrl = "http://localhost:3000/join/";
-      const uniqueUrl = `${baseUrl}${insertEventData[0].link}`;
+      if (insertEventError) {
+        console.error('Error creating event:', insertEventError);
+      } else {
+        console.log(insertEventData[0].link);
+        const baseUrl = "http://localhost:3000/join/";
+        const uniqueUrl = `${baseUrl}${insertEventData[0].link}`;
+        
+        navigate(`/`);
+      }
       
-      navigate(`/home/${user.user_id}`);
+
+    } else {
+      console.log("no tables available");
     }
+
+    
   };
   
   // Generate half-hour time slots
