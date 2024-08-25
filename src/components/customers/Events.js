@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, Typography, Button } from '@mui/material';
 import {supabase} from '../../supabaseClient';
+import { DateTime } from 'luxon';
 
 const Events = ({user}) => {
   const userId = user.user_id;
@@ -46,6 +47,10 @@ const Events = ({user}) => {
   const handleCreateEvent = () => {
     navigate(`/create-event`);
   };
+
+  const formatDate = (dateTime) => {
+    console.log(dateTime); 
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">

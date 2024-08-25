@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button, Typography, Box, FormControl, RadioGroup, FormControlLabel, Radio, LinearProgress } from '@mui/material';
 import { Search, Loader2, Link2, ArrowLeft, MapPin, Calendar, AlertCircle, Pencil } from "lucide-react"
-
+import { DateTime } from 'luxon';
 import { supabase } from '../../supabaseClient';
 
 const EventDetail = ({user}) => {
@@ -116,19 +116,15 @@ const EventDetail = ({user}) => {
   };
 
   // Format the date string
-  const formattedDate = new Date(event.event_date_time).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const formatDate = (eventDateTime) => {
+    const dateTime = DateTime.fromISO(eventDateTime).setZone('America/Los_Angeles');
+    return dateTime.toFormat('cccc, MMMM dd, yyyy');
+  };
 
-  // Format the time string
-  const formattedTime = new Date(event.event_date_time).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
+  const formatTime = (eventDateTime) => {
+    const dateTime = DateTime.fromISO(eventDateTime).setZone('America/Los_Angeles');
+    return dateTime.toFormat('hh:mm a');
+  };
 
 
   return (
@@ -137,7 +133,7 @@ const EventDetail = ({user}) => {
       <Box display="flex" justifyContent="left" alignItems="center" marginTop={1}>
         <Calendar size={20} />
         <Typography variant="body1" marginLeft={1}>
-          {formattedDate}, {formattedTime}
+          {formatDate(event.event_date_time)}, {formatTime(event.event_date_time)}
         </Typography>
       </Box>
       {restaurant && (

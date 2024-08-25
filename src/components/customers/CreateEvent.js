@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TextField, Button, MenuItem, Typography } from '@mui/material';
 import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
+import { DateTime } from 'luxon';
 
 const CreateEvent = ({user}) => {
   const navigate = useNavigate();
@@ -12,6 +13,9 @@ const CreateEvent = ({user}) => {
     restaurantId: ''
   });
   const [restaurants, setRestaurants] = useState([]);
+  const [tableError, setTableError] = useState('');
+
+  const timezone = "America/Los_Angeles";
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -53,19 +57,24 @@ const CreateEvent = ({user}) => {
     } else {
       console.log('API fetch successful');
     }
-    if (tableQueryRes) {
+    if (tableQueryRes[0]) {
       console.log(tableQueryRes);
       // add the event to the events table
-      const eventObject = {
-        host_user_id: user.user_id,
-        event_date: eventData.eventDate,
-        event_time: eventData.eventTime,
-        description: eventData.eventDescription,
-        number_of_seats_taken: 1,
-        number_of_seats_requested: eventData.numberOfSeats,
-        table_id: tableQueryRes[0].table_id,
-      }
-      console.log(eventObject);
+      // const eventObject = {
+      //   host_user_id: user.user_id,
+      //   event_date: eventData.eventDate,
+      //   event_time: eventData.eventTime,
+      //   description: eventData.eventDescription,
+      //   number_of_seats_taken: 1,
+      //   number_of_seats_requested: eventData.numberOfSeats,
+      //   table_id: tableQueryRes[0].table_id,
+      // }
+      
+      const timestamp = convertToTimestampWithTimezone(eventData.eventDate, eventData.eventTime, timezone);
+      console.log(timestamp);
+      // console.log(eventObject);
+      console.log(tableQueryRes[0].restaurant_id);
+      
       const { data: insertEventData, error: insertEventError } = await supabase
         .from('events')
         .insert([{
@@ -76,6 +85,8 @@ const CreateEvent = ({user}) => {
           number_of_seats_taken: 1,
           number_of_seats_requested: eventData.numberOfSeats,
           table_id: tableQueryRes[0].table_id,
+          event_date_time: timestamp,
+          restaurant_id: tableQueryRes[0].restaurant_id,
         }])
         .select();
 
@@ -92,6 +103,7 @@ const CreateEvent = ({user}) => {
 
     } else {
       console.log("no tables available");
+      setTableError("Error: There is no table that can accomodate the number of seats requested");
     }
 
     
@@ -107,6 +119,17 @@ const CreateEvent = ({user}) => {
     }
     return times;
   };
+
+  // Convert to timestamp with time zone
+  function convertToTimestampWithTimezone(dateString, timeString, timezone) {
+    // Combine date and time into a single string and parse with Luxon
+    const dt = DateTime.fromFormat(`${dateString} ${timeString}`, 'yyyy-MM-dd h:mm a', { zone: timezone });
+    // Return the timestamp
+    
+    return dt.toString();
+    
+  };
+
 
 
   return (
@@ -184,6 +207,7 @@ const CreateEvent = ({user}) => {
           rows={4}
           required
         />
+        {tableError && <Typography color="error"> {tableError} </Typography>}
         <Button variant="contained" color="primary" type="submit">Create Event</Button>
       </form>
     </div>
