@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, Typography, Button } from '@mui/material';
+import { Card, CardContent, Typography, Button, Box } from '@mui/material';
 import {supabase} from '../../supabaseClient';
 import { DateTime } from 'luxon';
 
@@ -57,12 +57,29 @@ const Events = ({user}) => {
     <div className="container mx-auto p-6">
       
 
-      <div class="relative bg-cover bg-center h-64 rounded-lg shadow-lg ">
-            <div class="absolute inset-0 bg-black opacity-50 rounded-lg"></div>
-            <div class="absolute top-1/4 left-4">
-                <h1 class="text-5xl text-white font-bold">Hello</h1>
-                <Typography variant="h4">{user.first_name}</Typography>
-            </div>
+      <div className="relative bg-cover bg-center h-64 rounded-lg shadow-lg ">
+            <Box 
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%', // Adjust the width as needed
+                maxWidth: '600px',
+                height: '300px', // Adjust the height as needed
+                backgroundImage: 'url(/rallyhorizonImage.jpg)', // Replace with your image URL
+                backgroundSize: 'cover', // Make sure the image covers the entire box
+                backgroundPosition: 'center', // Center the image
+                color: 'white', // Text color
+                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', // Optional text shadow for better readability
+              }}
+            >
+              <div className="absolute top-1/4 left-4">
+                  <h1 className="text-5xl text-white font-bold">Hello</h1>
+                  <Typography variant="h4">{user.first_name}</Typography>
+              </div>
+
+            </Box>
+            
         </div>
       <Button 
         variant="contained" 
