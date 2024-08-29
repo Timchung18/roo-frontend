@@ -48,8 +48,8 @@ const RestaurantHomePage = () => {
   if (error) return <p>Error loading data: {error}</p>;
 
   return (
-    <div>
-      <h1>{restaurant.name}</h1>
+    <div className='flex-column text-center mx-auto min-h-screen'>
+      <h1 className="text-lg font-bold">{restaurant.name}</h1>
       <p><strong>Address:</strong> {restaurant.address}</p>
       <p><strong>Description:</strong> {restaurant.description}</p>
       <p><strong>Cuisine:</strong> {restaurant.cuisine}</p>
@@ -58,12 +58,17 @@ const RestaurantHomePage = () => {
       <p><strong>Hours:</strong> {restaurant.hour_open} - {restaurant.hour_closed}</p>
 
       <Link to="/restaurant/createTable">
-        <button>Add New Table</button>
+        <button 
+          type="submit"
+          className="w-100 bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition-colors duration-200 m-2"
+        >
+          Add New Table
+        </button>
       </Link>
 
       <h2>Tables</h2>
       {tables.length > 0 ? (
-        <table>
+        <table className='flex-column mx-auto '>
           <thead>
             <tr>
               <th>Table Number</th>
