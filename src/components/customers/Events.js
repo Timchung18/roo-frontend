@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, Typography, Button, Box } from '@mui/material';
+import { Card, CardContent, Typography, Button, Box, Chip } from '@mui/material';
 import {supabase} from '../../supabaseClient';
 import { DateTime } from 'luxon';
 
@@ -53,72 +53,226 @@ const Events = ({user}) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-    <div className="container mx-auto p-6">
-      
-
-      <div className="relative bg-cover bg-center h-64 rounded-lg shadow-lg ">
-            <Box 
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%', // Adjust the width as needed
-                maxWidth: '600px',
-                height: '300px', // Adjust the height as needed
-                backgroundImage: 'url(/rallyhorizonImage.jpg)', // Replace with your image URL
-                backgroundSize: 'cover', // Make sure the image covers the entire box
-                backgroundPosition: 'center', // Center the image
-                color: 'white', // Text color
-                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', // Optional text shadow for better readability
-              }}
-            >
-              <div className="absolute top-1/4 left-4">
-                  <h1 className="text-5xl text-white font-bold">Hello</h1>
-                  <Typography variant="h4">{user.first_name}</Typography>
-              </div>
-
-            </Box>
-            
-        </div>
-      <Button 
-        variant="contained" 
-        color="primary" 
-        onClick={handleCreateEvent}
-        style={{ marginTop: 20, marginBottom: 20 }}
+    // <div className="min-h-screen bg-gray-100">
+    // <div className="container mx-auto p-6">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center', // Align the whole content box in the center
+        justifyContent: 'center',
+        backgroundColor: 'background.default',
+      }}
+    >
+      <Box 
+        sx={{
+          width: {
+            xs: '90%',   // 90% width on small screens
+            sm: '80%',   // 80% width on larger screens
+            md: '60%',   // 60% width on medium screens and above
+          },
+          maxWidth: '600px',  // Max width for the content box
+          padding: '20px',    // Padding inside the box
+          backgroundColor: 'white',  // Optional: Box background color
+          borderRadius: '8px',  // Optional: Rounded corners
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          
+        }}
       >
-        Create New Event
-      </Button>
-      <Typography variant="h6">Hosting Events</Typography>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, marginTop: 20 }}>
-        {hostingEvents.map(event => (
-          <Link to={`/event/${event.event_id}`} key={event.event_id} style={{ textDecoration: 'none' }}>
-            <Card style={{ width: 300 }}>
-              {/* <img src="path_to_image" alt="event" style={{ width: '100%' }} /> */}
-              <CardContent>
-                <Typography variant="body2">{new Date(event.event_date).toLocaleDateString()}</Typography>
-                <Typography variant="body2">{event.description}</Typography>
+        <Box 
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start', // Align text to the left inside the box
+            padding: '20px',
+            justifyContent: 'center',
+            width: '100%',
+            height: '300px', // Adjust the height as needed
+            backgroundImage: 'url(/rallyhorizonImage.jpg)', 
+            backgroundSize: 'cover', // Make sure the image covers the entire box
+            backgroundPosition: 'center', // Center the image
+            color: 'white', // Text color
+            borderRadius: '8px', // Match the border radius to the parent box
+          }}
+        >
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            sx={{ fontWeight: 530, fontSize: '2.8rem', letterSpacing: '0.04em' }}
+          >
+            Hello
+          </Typography>
+          <Typography 
+            variant="h5" 
+            component="h1"
+          >
+            {user.first_name}
+          </Typography>
+        </Box>
+
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={handleCreateEvent}
+          sx={{ marginTop: 3, marginBottom: 3 }} // Consistent margin using MUI spacing
+        >
+          Create New Event
+        </Button>
+
+        <Typography variant="h6">Hosting Events</Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, // 1 column on xs, 2 columns on sm and larger
+            gap: 1, // Consistent gap between cards
+            
+            width: '100%',
+            px: '15px',
+            
+          }}
+        >
+          {hostingEvents.map(event => (
+            <Link 
+              to={`/event/${event.event_id}`} 
+              key={event.event_id} 
+              style={{ textDecoration: 'none' }}
+            >
+              <Card 
+                sx={{
+                  borderRadius: '12px',  // Rounded corners
+                  overflow: 'hidden',  // Ensures content stays within rounded borders
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '200px',  // Make sure the card takes the full height
+                }}
+              >
+                <Box
+                  sx={{
+                    height: '70%',  // Adjust height for the image section
+                    backgroundImage: `url(/rallyhorizonImage.jpg)`,  // Use event-specific image
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                >
+                  <Box sx={{ padding: '10px' }}>
+                    <Chip
+                      label={new Date(event.event_date).toLocaleDateString()}
+                      sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        color: 'black',
+                        fontWeight: 'bold',
+                      }}
+                    />
+                  </Box>
+                </Box>
+                
+                <CardContent
+                  sx={{
+                    backgroundColor: 'white', // White background for the text section
+                    color: 'black',  // Black text color for contrast
+                    padding: '16px', // Padding around the text content
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    height: '30%',
+                  }}
+                >
+                  {/* <Typography variant="body2">
+                    {new Date(event.event_date).toLocaleDateString()}
+                  </Typography> */}
+                  <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+                    {event.description}
+                  </Typography>
+                  <Typography variant="body2" >
+                    {event.description}
+                  </Typography>
+                </CardContent>
+
+                
+              </Card>
+            </Link>
+          ))}
+        </Box>
+
+        <Typography variant="h6" sx={{ marginTop: 3 }}>Joined Events</Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, // 1 column on xs, 2 columns on sm and larger
+            gap: 1, // Consistent gap between cards
+            
+            width: '100%',
+            px: '15px',
+            
+          }}
+          
+        >
+          {joiningEvents.map(event => (
+            <Link 
+              to={`/event/${event.event_id}`} 
+              key={event.event_id} 
+              style={{ textDecoration: 'none' }}
+            >
+              <Card 
+                sx={{
+                  borderRadius: '12px',  // Rounded corners
+                  overflow: 'hidden',  // Ensures content stays within rounded borders
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '200px',  // Make sure the card takes the full height
+                }}
+              >
+                <Box
+                  sx={{
+                    height: '70%',  // Adjust height for the image section
+                    backgroundImage: `url(/rallyhorizonImage.jpg)`,  // Use event-specific image
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                >
+                  <Box sx={{ padding: '10px' }}>
+                    <Chip
+                      label={new Date(event.event_date).toLocaleDateString()}
+                      sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        color: 'black',
+                        fontWeight: 'bold',
+                      }}
+                    />
+                  </Box>
+                </Box>
+                
+                <CardContent
+                  sx={{
+                    backgroundColor: 'white', // White background for the text section
+                    color: 'black',  // Black text color for contrast
+                    padding: '16px', // Padding around the text content
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    height: '100%',
+                  }}
+                >
+                  {/* <Typography variant="body2">
+                    {new Date(event.event_date).toLocaleDateString()}
+                  </Typography> */}
+                  <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+                    {event.description}
+                  </Typography>
+                  <Typography variant="body2" >
+                    {event.description}
+                  </Typography>
               </CardContent>
             </Card>
-          </Link>
-        ))}
-      </div>
-      <Typography variant="h6">Joined Events</Typography>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, marginTop: 20 }}>
-        {joiningEvents.map(event => (
-          <Link to={`/event/${event.event_id}`} key={event.event_id} style={{ textDecoration: 'none' }}>
-            <Card style={{ width: 300 }}>
-              {/* <img src="path_to_image" alt="event" style={{ width: '100%' }} /> */}
-              <CardContent>
-                <Typography variant="body2">{new Date(event.event_date).toLocaleDateString()}</Typography>
-                <Typography variant="body2">{event.description}</Typography>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
-    </div>
-    </div>
+            </Link>
+          ))}
+        </Box>
+      </Box>
+    </Box>
+    // </div>
+    // </div>
   );
 };
 
