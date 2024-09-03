@@ -4,6 +4,7 @@ import { Button, Typography, Box, FormControl, RadioGroup, FormControlLabel, Rad
 import { Search, Loader2, Link2, ArrowLeft, MapPin, Calendar, AlertCircle, Pencil } from "lucide-react"
 import { DateTime } from 'luxon';
 import { supabase } from '../../supabaseClient';
+import { useUser } from '../UserContext';
 
 const EventDetail = ({user}) => {
   const { eventId } = useParams();
@@ -33,9 +34,17 @@ const EventDetail = ({user}) => {
     const updateJoiners = async () => {
       const {data, error} = await supabase
         .from('joiners')
-        .update({ response: newRsvpStatus })
-        .eq('joiner_user_id', user.user_id)
-        .eq('event_id', eventId);
+        .upsert(
+          { response: newRsvpStatus,
+            event_id : event.event_id,
+            joiner_id : user.user_id, }, {
+               // Ensure that the upsert is based on the combination of user_id and event_id
+            }
+          , {
+          onConflict: ['joiner_user_id', 'event_id']  // Ensure that the upsert is based on the combination of user_id and event_id
+        }
+        );
+        
 
       if (error) {
         console.error('Error updating RSVP status:', error.message);

@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, Typography, Button, Box, Chip } from '@mui/material';
 import {supabase} from '../../supabaseClient';
+import { useUser } from '../UserContext';
 import { DateTime } from 'luxon';
 
-const Events = ({user}) => {
-  const userId = user.user_id;
+const Events = () => {
+  // const userId = user.user_id;
+  const { user } = useUser();
   const navigate = useNavigate();
   const [hostingEvents, setHostingEvents] = useState([]);
   const [joiningEvents, setJoiningEvents] = useState([]);
@@ -15,7 +17,7 @@ const Events = ({user}) => {
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .eq('host_user_id',userId)
+        .eq('host_user_id', user.user_id)
         .order('event_date', { ascending: true });
       
       if (error) {
@@ -29,7 +31,7 @@ const Events = ({user}) => {
       let { data, error } = await supabase
       .from('events')
       .select('*, joiners!inner(event_id)')
-      .eq('joiners.joiner_user_id', userId)
+      .eq('joiners.joiner_user_id', user.user_id)
       .order('event_date', {ascending: true});
     
       if (error) {
@@ -48,9 +50,15 @@ const Events = ({user}) => {
     navigate(`/create-event`);
   };
 
-  const formatDate = (dateTime) => {
-    console.log(dateTime); 
-  }
+  const formatDate = (eventDateTime) => {
+    const dateTime = DateTime.fromISO(eventDateTime).setZone('America/Los_Angeles');
+    return dateTime.toFormat('ccc, MMMM dd, yyyy');
+  };
+
+  const formatTime = (eventDateTime) => {
+    const dateTime = DateTime.fromISO(eventDateTime).setZone('America/Los_Angeles');
+    return dateTime.toFormat('hh:mm a');
+  };
 
   return (
     // <div className="min-h-screen bg-gray-100">
@@ -158,7 +166,7 @@ const Events = ({user}) => {
                 >
                   <Box sx={{ padding: '10px' }}>
                     <Chip
-                      label={new Date(event.event_date).toLocaleDateString()}
+                      label={formatDate(event.event_date_time)}
                       sx={{
                         backgroundColor: 'rgba(255, 255, 255, 0.8)',
                         color: 'black',
@@ -234,7 +242,7 @@ const Events = ({user}) => {
                 >
                   <Box sx={{ padding: '10px' }}>
                     <Chip
-                      label={new Date(event.event_date).toLocaleDateString()}
+                      label={formatDate(event.event_date_time)}
                       sx={{
                         backgroundColor: 'rgba(255, 255, 255, 0.8)',
                         color: 'black',
@@ -245,6 +253,7 @@ const Events = ({user}) => {
                 </Box>
                 
                 <CardContent
+                
                   sx={{
                     backgroundColor: 'white', // White background for the text section
                     color: 'black',  // Black text color for contrast
@@ -252,7 +261,7 @@ const Events = ({user}) => {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    height: '100%',
+                    height: '30%',
                   }}
                 >
                   {/* <Typography variant="body2">

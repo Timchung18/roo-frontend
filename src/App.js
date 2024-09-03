@@ -11,29 +11,30 @@ import CreateTable from './components/restaurants/CreateTable';
 import RestaurantLogin from './components/restaurants/RestaurantLogin';
 import { useState } from 'react';
 import { Restaurant } from '@mui/icons-material';
+import { UserProvider } from './components/UserContext';
 
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
   const [restaurantUser, setRestaurantUser] = useState(null);
 
   return (
-    <Router>
+    <UserProvider>
+      <Router>
       <Routes>
-        <Route path="/" element={user ? <Navigate to={`/events`} /> : <Navigate to="/login" />} />
-        <Route path="/login" element={<Login  user={user} setUser={setUser}/>} />
+        <Route path="/" element={<Navigate to={isAuthenticated ? `/events` : "/login"} />} />
+        <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
 
-        <Route path="/events" element={user ? <Events user={user}/> : <Navigate to="/login" />} />
-        <Route path="/event/:eventId" element={user ? <EventDetail user={user}/> : <Navigate to="/login" />} />
-        <Route path="/create-event" element={user ? <CreateEvent user={user}/> : <Navigate to="/login" />} />
+        <Route path="/events" element={isAuthenticated ? <Events /> : <Navigate to="/login" />} />
+        <Route path="/event/:eventId" element={isAuthenticated ? <EventDetail /> : <Navigate to="/login" />} />
+        <Route path="/create-event" element={isAuthenticated ? <CreateEvent /> : <Navigate to="/login" />} />
 
         <Route path="/restaurant/login" element={<RestaurantLogin setRestaurantUser={setRestaurantUser}/> } />
-        <Route path="/restaurant/:restaurantId" element={restaurantUser ? <RestaurantHomePage/> : <Navigate to="/login"/>} />
+        <Route path="/restaurant/:restaurantId" element={restaurantUser ? <RestaurantHomePage/> : <Navigate to="/restaurant/login"/>} />
         <Route path="/restaurant/createTable" element={<CreateTable user={restaurantUser} />} />
-        
       </Routes>
     </Router>
+  </UserProvider>
   );
 }
 

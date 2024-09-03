@@ -3,8 +3,10 @@ import { TextField, Button, MenuItem, Typography } from '@mui/material';
 import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { DateTime } from 'luxon';
+import { useUser } from '../UserContext';
 
-const CreateEvent = ({user}) => {
+const CreateEvent = () => {
+  const { user } = useUser();
   const navigate = useNavigate();
   const [eventData, setEventData] = useState({
     eventName: '',

@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { CircularProgress, Typography, TextField, Box, Button } from '@mui/material';
+import { useUser } from '../UserContext';
 
 
 
-
-const Login = ({ setUser }) => {
+const Login = ({ setIsAuthenticated}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -14,6 +14,7 @@ const Login = ({ setUser }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { setUser } = useUser();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -51,6 +52,7 @@ const Login = ({ setUser }) => {
           // Placeholder: You should validate the password here in the future
           console.log(data[0].first_name, data[0].last_name);
           setUser(data[0]);
+          setIsAuthenticated(true);
           navigate(`/`);
         } else {
           setError("No account with this email was found");

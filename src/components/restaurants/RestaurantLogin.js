@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import { useUser } from '../UserContext';
 
 const RestaurantLogin = ({ setRestaurantUser }) => {
   const [email, setEmail] = useState('');
