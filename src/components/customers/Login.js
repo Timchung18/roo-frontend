@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { CircularProgress, Typography, TextField, Box, Button } from '@mui/material';
-import { useUser } from '../UserContext';
+// import { useUser } from '../UserContext';
 
 
 
-const Login = ({ setIsAuthenticated}) => {
+const Login = ({setUser}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -14,7 +14,20 @@ const Login = ({ setIsAuthenticated}) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { setUser } = useUser();
+  // const { user, setUser } = useUser();
+
+  // useEffect(() => {
+  //   const storedUser = localStorage.getItem('user');
+  //   console.log("useEffect, checking for stored user");
+  //   if (storedUser) {
+  //     setUser(JSON.parse(storedUser));
+  //     setIsAuthenticated(true);
+  //     console.log("Loading: ",user);
+  //     console.log("is Auth? :" , isAuthenticated);
+
+  //     navigate(`/events`);
+  //   }
+  // }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -51,8 +64,9 @@ const Login = ({ setIsAuthenticated}) => {
         if (data.length === 1) {
           // Placeholder: You should validate the password here in the future
           console.log(data[0].first_name, data[0].last_name);
+          localStorage.setItem('user', JSON.stringify(data[0]));  // Store user in localStorage
           setUser(data[0]);
-          setIsAuthenticated(true);
+          // setIsAuthenticated(true);
           navigate(`/`);
         } else {
           setError("No account with this email was found");

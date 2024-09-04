@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import './index.css';
-
 import Events from './components/customers/Events';
 import EventDetail from './components/customers/EventDetail';
 import Login from './components/customers/Login';
@@ -11,32 +10,41 @@ import CreateTable from './components/restaurants/CreateTable';
 import RestaurantLogin from './components/restaurants/RestaurantLogin';
 import { useState } from 'react';
 import { Restaurant } from '@mui/icons-material';
-import { UserProvider } from './components/UserContext';
-
+import useUser from './components/useUser';
 
 function App() {
+  const [user, setUser] = useUser();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const { setIsAuthenticated, isAuthenticated} = useUser();
   const [restaurantUser, setRestaurantUser] = useState(null);
 
   return (
-    <UserProvider>
+    // <UserProvider>
       <Router>
       <Routes>
-        <Route path="/" element={<Navigate to={isAuthenticated ? `/events` : "/login"} />} />
-        <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+        <Route path="/" element={<Navigate to={user ? `/events` : "/login"} />} />
+        {/* <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} isAuthenticated={isAuthenticated}/>} /> */}
+        <Route path="/login" element={<Login setUser={setUser}/>} />
 
-        <Route path="/events" element={isAuthenticated ? <Events /> : <Navigate to="/login" />} />
-        <Route path="/event/:eventId" element={isAuthenticated ? <EventDetail /> : <Navigate to="/login" />} />
-        <Route path="/create-event" element={isAuthenticated ? <CreateEvent /> : <Navigate to="/login" />} />
+        <Route path="/events" element={user ? <Events user={user}/> : <Navigate to="/login" />} />
+        <Route path="/event/:eventId" element={user ? <EventDetail user={user}/> : <Navigate to="/login" />} />
+        <Route path="/create-event" element={isAuthenticated ? <CreateEvent user={user}/> : <Navigate to="/login" />} />
 
         <Route path="/restaurant/login" element={<RestaurantLogin setRestaurantUser={setRestaurantUser}/> } />
         <Route path="/restaurant/:restaurantId" element={restaurantUser ? <RestaurantHomePage/> : <Navigate to="/restaurant/login"/>} />
         <Route path="/restaurant/createTable" element={<CreateTable user={restaurantUser} />} />
       </Routes>
-    </Router>
-  </UserProvider>
+      </Router>
+    // </UserProvider> 
   );
 }
 
 export default App;
+// export default function WrappedApp() {
+//   return (
+//     <UserProvider>
+//       <App />
+//     </UserProvider>
+//   );
+// }
 

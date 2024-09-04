@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, Typography, Button, Box, Chip } from '@mui/material';
 import {supabase} from '../../supabaseClient';
-import { useUser } from '../UserContext';
 import { DateTime } from 'luxon';
 
-const Events = () => {
+const Events = ({user}) => {
   // const userId = user.user_id;
-  const { user } = useUser();
+  // const { user } = useUser();
   const navigate = useNavigate();
   const [hostingEvents, setHostingEvents] = useState([]);
   const [joiningEvents, setJoiningEvents] = useState([]);

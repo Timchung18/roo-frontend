@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Typography, Box, FormControl, RadioGroup, FormControlLabel, Radio, LinearProgress } from '@mui/material';
+import { Typography, Box, LinearProgress } from '@mui/material';
 import { Search, Loader2, Link2, ArrowLeft, MapPin, Calendar, AlertCircle, Pencil } from "lucide-react"
 import { DateTime } from 'luxon';
 import { supabase } from '../../supabaseClient';
-import { useUser } from '../UserContext';
+// import { useUser } from '../UserContext';
+
 
 const EventDetail = ({user}) => {
+
   const { eventId } = useParams();
   const [event, setEvent] = useState(null);
   const [attendance, setAttendance] = useState(null);
@@ -34,18 +36,14 @@ const EventDetail = ({user}) => {
     const updateJoiners = async () => {
       const {data, error} = await supabase
         .from('joiners')
-        .upsert(
-          { response: newRsvpStatus,
-            event_id : event.event_id,
-            joiner_id : user.user_id, }, {
-               // Ensure that the upsert is based on the combination of user_id and event_id
-            }
-          , {
-          onConflict: ['joiner_user_id', 'event_id']  // Ensure that the upsert is based on the combination of user_id and event_id
-        }
-        );
+        .upsert({ 
+          response: newRsvpStatus.toLowerCase(),
+          event_id : event.event_id,
+          joiner_user_id : user.user_id, 
+        }, {
+          onConflict: ['joiner_user_id', 'event_id']// Ensure that the upsert is based on the combination of user_id and event_id
+        });
         
-
       if (error) {
         console.error('Error updating RSVP status:', error.message);
       } else {
@@ -76,19 +74,28 @@ const EventDetail = ({user}) => {
         console.log(data);
         // fetchAttendance(data.event_id); // Fetch attendance when event data is available
         await fetchRestaurant(data.restaurant_id);
+        await fetchRsvp();
       }
     };
 
-    const fetchAttendance = async (event_id) => {
+    const fetchRsvp = async () => {
       const { data, error } = await supabase
         .from('joiners')
         .select('*')
-        .eq('event_id', event_id);
+        .eq('event_id', eventId)
+        .eq('joiner_user_id', user.user_id);
       
       if (error) {
         console.error('Error fetching attendance:', error);
       } else {
-        setAttendance(data[0]);
+        const resp = data[0].response;
+        if (resp === "yes") {
+          setRsvpStatus("Yes");
+        } else if (resp === "no") {
+          setRsvpStatus("No");
+        } else {
+          setRsvpStatus("Maybe");
+        }
         
       }
     };
@@ -107,8 +114,9 @@ const EventDetail = ({user}) => {
         
       }
     };
-
+    console.log(user);
     fetchEvent();
+    // fetchRsvp();
   }, []);
 
 

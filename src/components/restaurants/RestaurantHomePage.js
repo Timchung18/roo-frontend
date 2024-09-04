@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
-import { useUser } from '../UserContext';
 
-const RestaurantHomePage = () => {
+const RestaurantHomePage = ({user}) => {
   const [restaurant, setRestaurant] = useState(null);
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
