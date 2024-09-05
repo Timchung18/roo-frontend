@@ -1,19 +1,19 @@
 // useUser.js
 import { useState, useEffect } from 'react';
 
-function useUser(userType) {
+function useUser() {
   // Initialize the user state with the value from localStorage, if it exists
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem(userType);
+    const storedUser = localStorage.getItem('user');
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
   // Sync the user state to localStorage whenever it changes
   useEffect(() => {
     if (user) {
-      localStorage.setItem(userType, JSON.stringify(user));
+      localStorage.setItem('user', JSON.stringify(user));
     } else {
-      localStorage.removeItem(userType);
+      localStorage.removeItem('user');
     }
   }, [user]);
 

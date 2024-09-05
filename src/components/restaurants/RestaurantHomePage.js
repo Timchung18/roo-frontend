@@ -5,6 +5,7 @@ import { supabase } from '../../supabaseClient';
 const RestaurantHomePage = ({user}) => {
   const [restaurant, setRestaurant] = useState(null);
   const [tables, setTables] = useState([]);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -12,28 +13,20 @@ const RestaurantHomePage = ({user}) => {
   useEffect(() => {
     const fetchRestaurantData = async () => {
       try {
-        const restaurantId = 1; // Replace with dynamic ID if needed
+        const owner_user_id = user.user_id; // Replace with dynamic ID if needed
 
         // Fetch restaurant information
         const { data: restaurantData, error: restaurantError } = await supabase
           .from('restaurants')
           .select('*')
-          .eq('restaurant_id', restaurantId)
+          .eq('owner_user_id', owner_user_id)
           .single();
 
         if (restaurantError) throw restaurantError;
 
         setRestaurant(restaurantData);
-
-        // Fetch tables associated with the restaurant
-        const { data: tablesData, error: tablesError } = await supabase
-          .from('tables')
-          .select('*')
-          .eq('restaurant_id', restaurantId);
-
-        if (tablesError) throw tablesError;
-
-        setTables(tablesData);
+        await fetchEvents(restaurantData);
+        console.log(events);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -44,8 +37,102 @@ const RestaurantHomePage = ({user}) => {
     fetchRestaurantData();
   }, []);
 
+  
+  const fetchEvents = async (restaurantData) => {
+    try {
+      const restaurantId = restaurantData.restaurant_id; 
+
+      // Fetch events information
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('*')
+        .eq('restaurant_id', restaurantId)
+        .order('table_id');
+
+      if (eventError) throw eventError;
+      
+      setEvents(eventData);
+      
+      // Fetch tables associated with the restaurant
+      const { data: tablesData, error: tablesError } = await supabase
+        .from('tables')
+        .select('*')
+        .eq('restaurant_id', restaurantId);
+
+      if (tablesError) throw tablesError;
+
+      setTables(tablesData);
+    } catch (err) {
+      setError(err.message);
+      console.log(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    
+
+
   if (loading) return <p>Loading restaurant data...</p>;
   if (error) return <p>Error loading data: {error}</p>;
+
+  const TableRow = ({ table, isExpanded, onClick }) => {
+    
+    return (
+      <>
+        <tr onClick={onClick} className="cursor-pointer bg-gray-100 hover:bg-gray-200">
+          <td className="py-2 px-6">Table ID: {table.table_id} Table Number: {table.table_number}</td>
+        </tr>
+        
+        {isExpanded && (
+          <tr>
+            <td colSpan="1" className="bg-gray-50">
+              <div className="p-4 flex-auto">
+                <p>Min Seats: {table.min_number_of_seats}</p>
+                <p>Max Seats: {table.max_number_of_seats}</p>
+                <p>Min Fund: {table.min_fund}</p>
+                {/* {tables.map((table, index) => (
+                <p
+                  key={table.table_id}
+                >
+
+                </p> */}
+              ))}
+              </div>
+            </td>
+          </tr>
+        )}
+      </>
+    );
+  };
+  
+  const TableList = ({ tables }) => {
+    const [expandedRow, setExpandedRow] = useState(null);
+  
+    const toggleRow = (index) => {
+      setExpandedRow(expandedRow === index ? null : index);
+    };
+  
+    return (
+      <table className="w-3/5 mx-auto mb-4 table-auto">
+        <thead>
+          <tr>
+            <th className="px-4 py-2">Tables </th>
+          </tr>
+        </thead>
+        <tbody>
+          {tables.map((table, index) => (
+            <TableRow
+              key={table.table_id}
+              table={table}
+              isExpanded={expandedRow === index}
+              onClick={() => toggleRow(index)}
+            />
+          ))}
+        </tbody>
+      </table>
+    );
+  };
 
   return (
     <div className='flex-column text-center mx-auto min-h-screen'>
@@ -66,29 +153,40 @@ const RestaurantHomePage = ({user}) => {
         </button>
       </Link>
 
-      <h2>Tables</h2>
-      {tables.length > 0 ? (
-        <table className='flex-column mx-auto '>
-          <thead>
-            <tr>
-              <th>Table Number</th>
-              <th>Min Seats</th>
-              <th>Max Seats</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tables.map((table) => (
-              <tr key={table.table_id}>
-                <td>{table.table_number}</td>
-                <td>{table.min_number_of_seats}</td>
-                <td>{table.max_number_of_seats}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
+      {tables.length > 0 ? 
+        <TableList tables={tables} /> 
+      : (
         <p>No tables available.</p>
       )}
+
+<div className="w-4/5 mx-auto mt-6 mb-4">
+      <table className="table-auto w-full border-collapse border border-gray-300">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border border-gray-300 px-4 py-2">Event ID</th>
+            <th className="border border-gray-300 px-4 py-2">Table ID</th>
+            <th className="border border-gray-300 px-4 py-2">Date</th>
+            <th className="border border-gray-300 px-4 py-2">Time</th>
+            <th className="border border-gray-300 px-4 py-2">Seats Confirmed</th>
+            <th className="border border-gray-300 px-4 py-2">Seats Requested</th>
+          </tr>
+        </thead>
+        <tbody>
+          {events.map((event) => (
+            <tr key={event.event_id} className="hover:bg-gray-50">
+              <td className="border border-gray-300 px-4 py-2">{event.event_id}</td>
+              <td className="border border-gray-300 px-4 py-2">{event.table_id}</td>
+              <td className="border border-gray-300 px-4 py-2">{event.event_date}</td>
+              <td className="border border-gray-300 px-4 py-2">{event.event_time}</td>
+              <td className="border border-gray-300 px-4 py-2">{event.
+number_of_seats_taken}</td>
+              <td className="border border-gray-300 px-4 py-2">{event.
+number_of_seats_requested}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
     </div>
   );
 };

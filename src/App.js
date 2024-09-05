@@ -13,10 +13,10 @@ import { Restaurant } from '@mui/icons-material';
 import useUser from './components/useUser';
 
 function App() {
-  const [user, setUser] = useUser();
+  const [user, setUser] = useUser('user');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   // const { setIsAuthenticated, isAuthenticated} = useUser();
-  const [restaurantUser, setRestaurantUser] = useState(null);
+  const [restaurantUser, setRestaurantUser] = useUser('restaurantUser');
 
   return (
     // <UserProvider>
@@ -31,8 +31,8 @@ function App() {
         <Route path="/create-event" element={isAuthenticated ? <CreateEvent user={user}/> : <Navigate to="/login" />} />
 
         <Route path="/restaurant/login" element={<RestaurantLogin setRestaurantUser={setRestaurantUser}/> } />
-        <Route path="/restaurant/:restaurantId" element={restaurantUser ? <RestaurantHomePage/> : <Navigate to="/restaurant/login"/>} />
-        <Route path="/restaurant/createTable" element={<CreateTable user={restaurantUser} />} />
+        <Route path="/restaurant/:restaurantId" element={restaurantUser ? <RestaurantHomePage user={restaurantUser} /> : <Navigate to="/restaurant/login"/>} />
+        <Route path="/restaurant/createTable" element={restaurantUser ? <CreateTable user={restaurantUser} /> : <Navigate to="/restaurant/login"/>} />
       </Routes>
       </Router>
     // </UserProvider> 
