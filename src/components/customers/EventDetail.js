@@ -114,6 +114,8 @@ const EventDetail = ({user}) => {
         
       }
     };
+
+    
     console.log(user);
     fetchEvent();
     // fetchRsvp();
@@ -176,7 +178,7 @@ const EventDetail = ({user}) => {
         {restaurant && (
           <Box marginTop={1}>
             <Typography variant="h5" display="inline" fontWeight="550" letterSpacing={1}>RSVP Fee </Typography>
-            <Typography variant="h5" display="inline" > {`$${restaurant.price_per_seat}`}</Typography>
+            <Typography variant="h5" display="inline" > {`$${event.funding_per_person ? event.funding_per_person : restaurant.price_per_seat}`}</Typography>
           </Box>
         )}
         <Typography variant="h5" display="inline" marginTop={4} fontWeight="550" letterSpacing={1}>You've raised: </Typography>

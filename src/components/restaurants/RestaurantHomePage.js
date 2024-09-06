@@ -96,8 +96,8 @@ const RestaurantHomePage = ({user}) => {
                   key={table.table_id}
                 >
 
-                </p> */}
-              ))}
+                </p> 
+              ))}*/}
               </div>
             </td>
           </tr>
