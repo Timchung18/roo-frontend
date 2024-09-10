@@ -88,15 +88,18 @@ const EventDetail = ({user}) => {
       if (error) {
         console.error('Error fetching attendance:', error);
       } else {
-        const resp = data[0].response;
-        if (resp === "yes") {
-          setRsvpStatus("Yes");
-        } else if (resp === "no") {
-          setRsvpStatus("No");
+        if (data.length === 0) {
+          setRsvpStatus("No response");
         } else {
-          setRsvpStatus("Maybe");
+          const resp = data[0].response;
+          if (resp === "yes") {
+            setRsvpStatus("Yes");
+          } else if (resp === "no") {
+            setRsvpStatus("No");
+          } else {
+            setRsvpStatus("Maybe");
+          }
         }
-        
       }
     };
 

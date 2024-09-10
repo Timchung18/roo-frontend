@@ -54,6 +54,7 @@ const CreateEvent = ({user}) => {
       .order('max_number_of_seats', { ascending: true });
     if (tableQueryErr) {
       console.error('Error fetching restaurants:', tableQueryErr);
+      return;
     } else {
       console.log('API fetch successful');
     }
@@ -74,7 +75,7 @@ const CreateEvent = ({user}) => {
       console.log(timestamp);
       // console.log(eventObject);
       console.log(tableQueryRes[0].restaurant_id);
-      
+      const fundingPerPerson = (tableQueryRes[0].min_fund / eventData.numberOfSeats).toFixed(2);
       const { data: insertEventData, error: insertEventError } = await supabase
         .from('events')
         .insert([{
@@ -87,17 +88,20 @@ const CreateEvent = ({user}) => {
           table_id: tableQueryRes[0].table_id,
           event_date_time: timestamp,
           restaurant_id: tableQueryRes[0].restaurant_id,
+          funding_per_person: fundingPerPerson,
         }])
         .select();
 
       if (insertEventError) {
         console.error('Error creating event:', insertEventError);
       } else {
-        console.log(insertEventData[0].link);
-        const baseUrl = "http://localhost:3000/join/";
-        const uniqueUrl = `${baseUrl}${insertEventData[0].link}`;
-        
-        navigate(`/`);
+        // console.log(insertEventData[0].link);
+        // const baseUrl = "http://localhost:3000/join/";
+        // const uniqueUrl = `${baseUrl}${insertEventData[0].link}`;
+        const res = await updateJoinersTable(insertEventData[0].event_id, user.user_id);
+        if (res === 0) {
+          navigate(`/`);
+        }
       }
       
 
@@ -108,6 +112,23 @@ const CreateEvent = ({user}) => {
 
     
   };
+
+  const updateJoinersTable = async (eventId, joinerUserId) => {
+    const { data, error } = await supabase
+      .from('joiners')
+      .insert([{
+        event_id: eventId,
+        joiner_user_id: joinerUserId,
+        response: "yes",
+      }]);
+    
+    if (error) {
+      console.log(error);
+      return -1;
+    } else {
+      return 0;
+    }
+  }
   
   // Generate half-hour time slots
   const generateTimeSlots = () => {

@@ -28,7 +28,7 @@ function App() {
 
         <Route path="/events" element={user ? <Events user={user}/> : <Navigate to="/login" />} />
         <Route path="/event/:eventId" element={user ? <EventDetail user={user}/> : <Navigate to="/login" />} />
-        <Route path="/create-event" element={isAuthenticated ? <CreateEvent user={user}/> : <Navigate to="/login" />} />
+        <Route path="/create-event" element={user ? <CreateEvent user={user}/> : <Navigate to="/login" />} />
 
         <Route path="/restaurant/login" element={<RestaurantLogin setRestaurantUser={setRestaurantUser}/> } />
         <Route path="/restaurant/:restaurantId" element={restaurantUser ? <RestaurantHomePage user={restaurantUser} /> : <Navigate to="/restaurant/login"/>} />
