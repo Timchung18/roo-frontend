@@ -9,8 +9,12 @@ import RestaurantHomePage from './components/restaurants/RestaurantHomePage';
 import CreateTable from './components/restaurants/CreateTable';
 import RestaurantLogin from './components/restaurants/RestaurantLogin';
 import { useState } from 'react';
-import { Restaurant } from '@mui/icons-material';
 import useUser from './components/useUser';
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe("pk_test_51Pe8twE6CxuplvwO97mbgyGUDOCHIjcFfoX7fOsttZp2gfbelQ52GUcINmHnpyNWdt9i7t5FqdiamSdj4Usjopw500aNvDW1if");
+
 
 function App() {
   const [user, setUser] = useUser('user');

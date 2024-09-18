@@ -1,25 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Box, LinearProgress } from '@mui/material';
-import { Search, Loader2, Link2, ArrowLeft, MapPin, Calendar, AlertCircle, Pencil } from "lucide-react"
+import { Typography, Box, LinearProgress, Button } from '@mui/material';
+import { MapPin, Calendar } from "lucide-react"
 import { DateTime } from 'luxon';
 import { supabase } from '../../supabaseClient';
-// import { useUser } from '../UserContext';
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import CheckoutForm from './CheckoutForm';
 
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_TEST_PUBLIC_KEY);
 
 const EventDetail = ({user}) => {
-
   const { eventId } = useParams();
   const [event, setEvent] = useState(null);
   const [attendance, setAttendance] = useState(null);
   const [restaurant, setRestaurant] = useState(null);
-  const [userContribution, setUserContribution] = useState(0);
-  // const [userId, setUserId] = useState(null);
 
   const [rsvpStatus, setRsvpStatus] = useState('Maybe'); // Default status
   const [isEditing, setIsEditing] = useState(false);
   const [newRsvpStatus, setNewRsvpStatus] = useState(rsvpStatus);
 
+  const [clientSecret, setClientSecret] = useState("");
+  const [dpmCheckerLink, setDpmCheckerLink] = useState("");
+
+  const appearance = {
+    theme: 'stripe',
+  };
+  const options = {
+    clientSecret,
+    appearance,
+  };
+
+  
   // Handlers for entering and saving edit mode
   const handleEditClick = () => {
     setIsEditing(true);
@@ -245,6 +257,9 @@ const EventDetail = ({user}) => {
           </Box>
         )}
       </Box>
+      <Elements stripe={stripePromise}>
+      <CheckoutForm />      
+      </Elements>
       
     </Box>
   );
