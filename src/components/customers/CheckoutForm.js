@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 // const fetchCreatePaymenttUrl = 'http://localhost:5000/create-payment-intent';
-const fetchCreatePaymenttUrl = "";
+// const fetchCreatePaymenttUrl = "";
+const fetchCreatePaymenttUrl = "https://pzbybfzhitdinnvvghlz.supabase.co/functions/v1/create-payment-intent";
 
 const CheckoutForm = () => {
   const stripe = useStripe();
@@ -28,7 +29,9 @@ const CheckoutForm = () => {
       // Fetch the client secret from the backend
       const response = await fetch(fetchCreatePaymenttUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ amount: 1000, currency: 'usd' }), // Adjust amount and currency as needed
       });
 
