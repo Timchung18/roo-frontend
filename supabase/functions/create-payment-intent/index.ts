@@ -41,7 +41,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), {
 // List of allowed origins
 const allowedOrigins = [
   "http://localhost:3000", // Local development origin
-  "https://roo-frontend-mocha.vercel.app/", // Production site
+  "https://roo-frontend-mocha.vercel.app", // Production site
 ];
 
 Deno.serve(async (req) => {

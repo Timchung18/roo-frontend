@@ -189,9 +189,9 @@ const Events = ({user}) => {
                   {/* <Typography variant="body2">
                     {new Date(event.event_date).toLocaleDateString()}
                   </Typography> */}
-                  <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+                  {/* <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
                     {event.description}
-                  </Typography>
+                  </Typography> */}
                   <Typography variant="body2" >
                     {event.description}
                   </Typography>

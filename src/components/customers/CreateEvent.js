@@ -236,3 +236,24 @@ const CreateEvent = ({user}) => {
 };
 
 export default CreateEvent;
+
+/*
+const reservationStart = new Date('2024-09-19T18:00:00');
+const reservationEnd = new Date(reservationStart.getTime() + 2 * 60 * 60 * 1000);  // Adds 2 hours
+
+const { data: newReservation, error: reservationError } = await supabase
+  .from('reservations')
+  .insert([{
+    customer_id: customerId,
+    restaurant_id: restaurantId,
+    table_id: selectedTableId,
+    reservation_start: reservationStart.toISOString(),
+    reservation_end: reservationEnd.toISOString(),
+    status: 'Confirmed'
+  }]);
+
+if (reservationError) {
+  console.error('Error inserting reservation:', reservationError);
+}
+
+*/

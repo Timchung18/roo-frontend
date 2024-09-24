@@ -19,6 +19,8 @@ const EventDetail = ({user}) => {
   const [rsvpStatus, setRsvpStatus] = useState('Maybe'); // Default status
   const [isEditing, setIsEditing] = useState(false);
   const [newRsvpStatus, setNewRsvpStatus] = useState(rsvpStatus);
+  const [canPay, setCanPay] = useState(true);
+  const [canEdit, setCanEdit] = useState(true);
 
   const [clientSecret, setClientSecret] = useState("");
   const [dpmCheckerLink, setDpmCheckerLink] = useState("");
@@ -106,6 +108,8 @@ const EventDetail = ({user}) => {
           const resp = data[0].response;
           if (resp === "yes") {
             setRsvpStatus("Yes");
+            setCanPay(false);
+            setCanEdit(false);
           } else if (resp === "no") {
             setRsvpStatus("No");
           } else {
@@ -202,7 +206,7 @@ const EventDetail = ({user}) => {
 
       <Box marginTop={4} display="flex" justifyContent="center" alignItems="center" flexDirection="column">
         <Typography variant="h5">RSVP Status: <span style={{ color: rsvpStatus === 'Yes' ? 'green' : rsvpStatus === 'No' ? 'red' : 'orange' }}>{rsvpStatus}</span></Typography>
-        {!isEditing ? (
+        {(!isEditing && canEdit) ? (
           <button onClick={handleEditClick} style={{ padding: '10px 20px', marginTop: '10px', cursor: 'pointer' }}>Edit RSVP</button>
         ) : (
           <Box marginTop={2}>
@@ -257,9 +261,12 @@ const EventDetail = ({user}) => {
           </Box>
         )}
       </Box>
-      <Elements stripe={stripePromise}>
-      <CheckoutForm />      
-      </Elements>
+
+      {canPay && 
+        <Elements stripe={stripePromise}>
+          <CheckoutForm />      
+        </Elements>
+      }
       
     </Box>
   );
