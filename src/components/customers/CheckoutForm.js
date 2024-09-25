@@ -6,7 +6,7 @@ import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 // const fetchCreatePaymenttUrl = "";
 const fetchCreatePaymenttUrl = "https://pzbybfzhitdinnvvghlz.supabase.co/functions/v1/create-payment-intent";
 
-const CheckoutForm = () => {
+const CheckoutForm = ({setCanEdit, updateJoiners, setPaymentStatus}) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
@@ -18,6 +18,7 @@ const CheckoutForm = () => {
     event.preventDefault();
     setLoading(true);
     setError(null);
+    setPaymentStatus("pending");
 
     // Ensure stripe and elements are loaded
     if (!stripe || !elements) {
@@ -55,12 +56,17 @@ const CheckoutForm = () => {
 
       if (error) {
         setError(error.message);
+        setPaymentStatus("fail");
       } else if (paymentIntent.status === 'succeeded') {
         setSuccess(true);
         setConfirmationMessage('Thank you! Your payment was successful.');
+        setCanEdit(false);
+        updateJoiners();
+        setPaymentStatus("success");
       }
     } catch (error) {
       setError('Payment failed: ' + error.message);
+      setPaymentStatus("fail");
     } finally {
       setLoading(false);
     }

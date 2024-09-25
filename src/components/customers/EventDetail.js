@@ -15,11 +15,13 @@ const EventDetail = ({user}) => {
   const [event, setEvent] = useState(null);
   const [attendance, setAttendance] = useState(null);
   const [restaurant, setRestaurant] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState("none");
+  const [seatsTaken, setSeatsTaken] = useState(0);
 
   const [rsvpStatus, setRsvpStatus] = useState('Maybe'); // Default status
   const [isEditing, setIsEditing] = useState(false);
   const [newRsvpStatus, setNewRsvpStatus] = useState(rsvpStatus);
-  const [canPay, setCanPay] = useState(true);
+  const [canPay, setCanPay] = useState(false);
   const [canEdit, setCanEdit] = useState(true);
 
   const [clientSecret, setClientSecret] = useState("");
@@ -35,6 +37,39 @@ const EventDetail = ({user}) => {
 
   
   // Handlers for entering and saving edit mode
+  const updateJoiners = async () => {
+    const {data, error} = await supabase
+      .from('joiners')
+      .upsert({ 
+        response: newRsvpStatus.toLowerCase(),
+        event_id : event.event_id,
+        joiner_user_id : user.user_id, 
+      }, {
+        onConflict: ['joiner_user_id', 'event_id']// Ensure that the upsert is based on the combination of user_id and event_id
+      });
+    
+    if (newRsvpStatus.toLowerCase() === "yes") {
+      const {data: eventSeatData, error: eventSeatError} = await supabase
+      .from('events')
+      .update({ number_of_seats_taken: event.number_of_seats_taken + 1 })
+      .eq('event_id', event.event_id);
+
+      if (eventSeatError) {
+        console.error('Error updating events table, number of seats taken: ', eventSeatError.message);
+      } else {
+        console.log('Update events table successful');
+        setSeatsTaken(seatsTaken + 1);
+      }
+
+    }
+      
+    if (error) {
+      console.error('Error updating RSVP status:', error.message);
+    } else {
+      console.log('RSVP status updated successfully');
+    }
+  }
+
   const handleEditClick = () => {
     setIsEditing(true);
   };
@@ -47,25 +82,14 @@ const EventDetail = ({user}) => {
     setRsvpStatus(newRsvpStatus);
     setIsEditing(false);
 
-    const updateJoiners = async () => {
-      const {data, error} = await supabase
-        .from('joiners')
-        .upsert({ 
-          response: newRsvpStatus.toLowerCase(),
-          event_id : event.event_id,
-          joiner_user_id : user.user_id, 
-        }, {
-          onConflict: ['joiner_user_id', 'event_id']// Ensure that the upsert is based on the combination of user_id and event_id
-        });
-        
-      if (error) {
-        console.error('Error updating RSVP status:', error.message);
-      } else {
-        console.log('RSVP status updated successfully');
-      }
+    
+    if (newRsvpStatus === "No" || newRsvpStatus === "Maybe") {
+      updateJoiners();
+      setCanPay(false);
+    } else {
+      setCanPay(true);
     }
-
-    updateJoiners();
+    
   };
 
   const handleCancelClick = () => {
@@ -86,6 +110,7 @@ const EventDetail = ({user}) => {
       } else {
         setEvent(data);
         console.log(data);
+        setSeatsTaken(data.number_of_seats_taken);
         // fetchAttendance(data.event_id); // Fetch attendance when event data is available
         await fetchRestaurant(data.restaurant_id);
         await fetchRsvp();
@@ -108,7 +133,6 @@ const EventDetail = ({user}) => {
           const resp = data[0].response;
           if (resp === "yes") {
             setRsvpStatus("Yes");
-            setCanPay(false);
             setCanEdit(false);
           } else if (resp === "no") {
             setRsvpStatus("No");
@@ -130,14 +154,11 @@ const EventDetail = ({user}) => {
       } else {
         setRestaurant(data[0]);
         console.log(restaurant);
-        
       }
     };
-
     
     console.log(user);
     fetchEvent();
-    // fetchRsvp();
   }, []);
 
 
@@ -184,7 +205,7 @@ const EventDetail = ({user}) => {
       {event.image && <img src={event.image} style={imageStyles} />}
       <Box marginTop={2}>
         <Typography variant="h5" fontWeight="550" letterSpacing={1}>Who's going?</Typography>
-        <Typography variant="body2">{`${event.number_of_seats_taken} / ${event.number_of_seats_requested} Spots Reserved`}</Typography>
+        <Typography variant="body2">{`${seatsTaken} / ${event.number_of_seats_requested} Spots Reserved`}</Typography>
         
         <LinearProgress
           variant="determinate"
@@ -206,7 +227,9 @@ const EventDetail = ({user}) => {
 
       <Box marginTop={4} display="flex" justifyContent="center" alignItems="center" flexDirection="column">
         <Typography variant="h5">RSVP Status: <span style={{ color: rsvpStatus === 'Yes' ? 'green' : rsvpStatus === 'No' ? 'red' : 'orange' }}>{rsvpStatus}</span></Typography>
-        {(!isEditing && canEdit) ? (
+        { canEdit && 
+        <Box>
+        {(!isEditing ) ? (
           <button onClick={handleEditClick} style={{ padding: '10px 20px', marginTop: '10px', cursor: 'pointer' }}>Edit RSVP</button>
         ) : (
           <Box marginTop={2}>
@@ -260,11 +283,13 @@ const EventDetail = ({user}) => {
             </Box>
           </Box>
         )}
+        </Box>
+        }
       </Box>
 
       {canPay && 
         <Elements stripe={stripePromise}>
-          <CheckoutForm />      
+          <CheckoutForm setCanEdit={setCanEdit} updateJoiners={updateJoiners} setPaymentStatus={setPaymentStatus} />      
         </Elements>
       }
       

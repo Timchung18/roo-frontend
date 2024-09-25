@@ -189,12 +189,12 @@ const Events = ({user}) => {
                   {/* <Typography variant="body2">
                     {new Date(event.event_date).toLocaleDateString()}
                   </Typography> */}
-                  {/* <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-                    {event.description}
-                  </Typography> */}
-                  <Typography variant="body2" >
+                  <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
                     {event.description}
                   </Typography>
+                  {/* <Typography variant="body2" >
+                    {event.description}
+                  </Typography> */}
                 </CardContent>
 
                 
@@ -269,9 +269,9 @@ const Events = ({user}) => {
                   <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
                     {event.description}
                   </Typography>
-                  <Typography variant="body2" >
+                  {/* <Typography variant="body2" >
                     {event.description}
-                  </Typography>
+                  </Typography> */}
               </CardContent>
             </Card>
             </Link>
