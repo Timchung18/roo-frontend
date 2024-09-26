@@ -7,6 +7,7 @@ import { supabase } from '../../supabaseClient';
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm from './CheckoutForm';
+import BackButton from '../backButton';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_TEST_PUBLIC_KEY);
 
@@ -188,7 +189,8 @@ const EventDetail = ({user}) => {
 
   return (
     <Box padding={3} margin="0 auto" textAlign="left" maxWidth="600px">
-      <Typography variant="h4" fontWeight="bold">{event.description}</Typography>
+      <BackButton/>
+      <Typography margin="10px auto" variant="h4" fontWeight="bold">{event.description}</Typography>
       <Box display="flex" justifyContent="left" alignItems="center" marginTop={1}>
         <Calendar size={20} />
         <Typography variant="body1" marginLeft={1}>
@@ -222,7 +224,7 @@ const EventDetail = ({user}) => {
           </Box>
         )}
         <Typography variant="h5" display="inline" marginTop={4} fontWeight="550" letterSpacing={1}>You've raised: </Typography>
-        <Typography variant="h5" display="inline">{`$${0}`}</Typography>
+        <Typography variant="h5" display="inline">{`$${(event.funding_per_person * event.number_of_seats_taken).toFixed(2)}`}</Typography>
       </Box>
 
       <Box marginTop={4} display="flex" justifyContent="center" alignItems="center" flexDirection="column">

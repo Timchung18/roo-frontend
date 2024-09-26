@@ -22,9 +22,14 @@ function App() {
   // const { setIsAuthenticated, isAuthenticated} = useUser();
   const [restaurantUser, setRestaurantUser] = useUser('restaurantUser');
 
+  const pageStyle = {
+    backgroundColor: '#f5f5f5', // light white-gray color
+    minHeight: '100vh', // ensure the page covers full height
+  };
+
   return (
-    // <UserProvider>
-      <Router>
+    <div style={pageStyle}>
+    <Router>
       <Routes>
         <Route path="/" element={<Navigate to={user ? `/events` : "/login"} />} />
         {/* <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} isAuthenticated={isAuthenticated}/>} /> */}
@@ -38,17 +43,9 @@ function App() {
         <Route path="/restaurant/:restaurantId" element={restaurantUser ? <RestaurantHomePage user={restaurantUser} /> : <Navigate to="/restaurant/login"/>} />
         <Route path="/restaurant/createTable" element={restaurantUser ? <CreateTable user={restaurantUser} /> : <Navigate to="/restaurant/login"/>} />
       </Routes>
-      </Router>
-    // </UserProvider> 
+    </Router>
+    </div>
   );
 }
 
 export default App;
-// export default function WrappedApp() {
-//   return (
-//     <UserProvider>
-//       <App />
-//     </UserProvider>
-//   );
-// }
-

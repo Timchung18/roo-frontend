@@ -83,7 +83,7 @@ const CreateEvent = ({user}) => {
           event_date: eventData.eventDate,
           event_time: eventData.eventTime,
           description: eventData.eventDescription,
-          number_of_seats_taken: 1,
+          number_of_seats_taken: 0,
           number_of_seats_requested: eventData.numberOfSeats,
           table_id: tableQueryRes[0].table_id,
           event_date_time: timestamp,
