@@ -211,7 +211,7 @@ const EventDetail = ({user}) => {
         
         <LinearProgress
           variant="determinate"
-          value={(event.number_of_seats_taken / event.number_of_seats_requested) * 100}
+          value={(seatsTaken / event.number_of_seats_requested) * 100}
           sx={{ height: 10, borderRadius: 5, bgcolor: 'lightgray', '& .MuiLinearProgress-bar': { bgcolor: '#F28934' } }}
         />
       </Box>
@@ -224,7 +224,7 @@ const EventDetail = ({user}) => {
           </Box>
         )}
         <Typography variant="h5" display="inline" marginTop={4} fontWeight="550" letterSpacing={1}>You've raised: </Typography>
-        <Typography variant="h5" display="inline">{`$${(event.funding_per_person * event.number_of_seats_taken).toFixed(2)}`}</Typography>
+        <Typography variant="h5" display="inline">{`$${(event.funding_per_person * seatsTaken).toFixed(2)}`}</Typography>
       </Box>
 
       <Box marginTop={4} display="flex" justifyContent="center" alignItems="center" flexDirection="column">
@@ -291,7 +291,7 @@ const EventDetail = ({user}) => {
 
       {canPay && 
         <Elements stripe={stripePromise}>
-          <CheckoutForm setCanEdit={setCanEdit} updateJoiners={updateJoiners} setPaymentStatus={setPaymentStatus} />      
+          <CheckoutForm setCanEdit={setCanEdit} updateJoiners={updateJoiners} setPaymentStatus={setPaymentStatus} amount={event.funding_per_person} />      
         </Elements>
       }
       

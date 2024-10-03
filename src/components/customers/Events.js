@@ -10,6 +10,12 @@ const Events = ({user}) => {
   const navigate = useNavigate();
   const [hostingEvents, setHostingEvents] = useState([]);
   const [joiningEvents, setJoiningEvents] = useState([]);
+  const rsvpMap = {
+    'yes': 'Going',
+    'no': 'Declined',
+    'maybe': 'Maybe'
+  };
+  
 
   useEffect(() => {
     const fetchHostingEvents = async () => {
@@ -28,17 +34,43 @@ const Events = ({user}) => {
 
     const fetchEventsJoinedByUser = async () => {
       let { data, error } = await supabase
-      .from('events')
-      .select('*, joiners!inner(event_id)')
-      .eq('joiners.joiner_user_id', user.user_id)
-      .order('event_date', {ascending: true});
-    
+        .from('joiners')
+        .select(`
+          joiner_id,
+          joiner_user_id,
+          response,
+          event_id,
+          eventDetails:events (
+            event_id,
+            description,
+            event_date_time
+          )
+        `)
+        .eq('joiner_user_id', user.user_id);
+
       if (error) {
-        console.error('Error fetching events:', error)
+        console.log(error);
       } else {
-        console.log('Events joined by user:', data);
+        if (data) {
+          // Sort by event_date_time in ascending order
+          data.sort((a, b) => new Date(a.eventDetails.event_date_time) - new Date(b.eventDetails.event_date_time));
+        }
+        console.log(data);
         setJoiningEvents(data);
       }
+
+      // let { data: tempData, error: tempError } = await supabase
+      // .from('events')
+      // .select('*, joiners!inner(event_id)')
+      // .eq('joiners.joiner_user_id', user.user_id)
+      // .order('event_date', {ascending: true});
+      
+      // if (tempError) {
+      //   console.error('Error fetching events:', tempError)
+      // } else {
+      //   console.log('Events joined by user:', tempData);
+      //   // setJoiningEvents(data);
+      // }
     }
     
     fetchEventsJoinedByUser();
@@ -161,9 +193,17 @@ const Events = ({user}) => {
                     backgroundImage: `url(/rallyhorizonImage.jpg)`,  // Use event-specific image
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
+                    position: 'relative',
                   }}
                 >
-                  <Box sx={{ padding: '10px' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',  // Align items to the left and right
+                      padding: '10px',
+                      width: '100%',
+                    }}
+                  >
                     <Chip
                       label={formatDate(event.event_date_time)}
                       sx={{
@@ -172,6 +212,29 @@ const Events = ({user}) => {
                         fontWeight: 'bold',
                       }}
                     />
+                    <Chip
+                      label='Going'
+                      sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        color: 'black',
+                        fontWeight: 'bold',
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      backgroundColor: 'black',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderTopLeftRadius: '8px',  // Rounded top-left corner
+                      fontSize: '15px',  // Adjust the size of the text as needed
+                      fontWeight: '600',
+                    }}
+                  >
+                    Hosting
                   </Box>
                 </Box>
                 
@@ -189,7 +252,7 @@ const Events = ({user}) => {
                   {/* <Typography variant="body2">
                     {new Date(event.event_date).toLocaleDateString()}
                   </Typography> */}
-                  <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+                  <Typography variant="h6" component="div" sx={{ fontWeight: '400' }}>
                     {event.description}
                   </Typography>
                   {/* <Typography variant="body2" >
@@ -216,10 +279,10 @@ const Events = ({user}) => {
           }}
           
         >
-          {joiningEvents.map(event => (
+          {joiningEvents.map(rsvpResponse => (
             <Link 
-              to={`/event/${event.event_id}`} 
-              key={event.event_id} 
+              to={`/event/${rsvpResponse.event_id}`} 
+              key={rsvpResponse.event_id} 
               style={{ textDecoration: 'none' }}
             >
               <Card 
@@ -239,9 +302,25 @@ const Events = ({user}) => {
                     backgroundPosition: 'center',
                   }}
                 >
-                  <Box sx={{ padding: '10px' }}>
+                  <Box 
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',  // Align items to the left and right
+                      padding: '10px',
+                      width: '100%',
+                    }}
+                  >
                     <Chip
-                      label={formatDate(event.event_date_time)}
+                      label={formatDate(rsvpResponse['eventDetails']['event_date_time'])}
+                      sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        color: 'black',
+                        fontWeight: 'bold',
+                      }}
+                    />
+
+                    <Chip
+                      label={rsvpMap[rsvpResponse.response]}
                       sx={{
                         backgroundColor: 'rgba(255, 255, 255, 0.8)',
                         color: 'black',
@@ -266,8 +345,8 @@ const Events = ({user}) => {
                   {/* <Typography variant="body2">
                     {new Date(event.event_date).toLocaleDateString()}
                   </Typography> */}
-                  <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-                    {event.description}
+                  <Typography variant="h6" component="div" sx={{ fontWeight: '500' }}>
+                    {rsvpResponse['eventDetails']['description']}
                   </Typography>
                   {/* <Typography variant="body2" >
                     {event.description}
@@ -285,43 +364,4 @@ const Events = ({user}) => {
 };
 
 export default Events;
-{/* <div class="min-h-screen bg-gray-100">
-    <!-- Navbar -->
-    <nav class="relative bg-white shadow-md p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-lg font-bold">Menu</div>
-            <button class="rounded-full p-2 bg-gray-200">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                </svg>
-            </button>
-        </div>
-    </nav>
 
-    <!-- Main Content -->
-    <div class="container mx-auto p-6">
-        <div class="relative bg-cover bg-center h-64 rounded-lg shadow-lg" style="background-image: url('path_to_your_image.jpg');">
-            <div class="absolute inset-0 bg-black opacity-50 rounded-lg"></div>
-            <div class="absolute top-1/4 left-4">
-                <h1 class="text-5xl text-white font-bold">Hello</h1>
-                <p class="text-3xl text-white">Tim</p>
-            </div>
-        </div>
-
-        <!-- Events Section -->
-        <div class="mt-10">
-            <h2 class="text-2xl font-semibold mb-4">Your events</h2>
-            <div class="bg-white rounded-lg shadow-md p-4 flex">
-                <div class="relative w-1/4 h-32 bg-cover bg-center rounded-lg" style="background-image: url('path_to_your_event_image.jpg');"></div>
-                <div class="ml-4 flex-1">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="bg-orange-500 text-white text-xs font-semibold rounded-full px-3 py-1">August 31, 2024</span>
-                        <span class="text-gray-500 text-sm font-semibold">Hosting</span>
-                    </div>
-                    <h3 class="text-lg font-semibold">Lunch Get together</h3>
-                    <p class="text-gray-500">Pizza Hut</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> */}
