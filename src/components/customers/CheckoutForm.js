@@ -6,7 +6,7 @@ import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 // const fetchCreatePaymenttUrl = "";
 const fetchCreatePaymenttUrl = "https://pzbybfzhitdinnvvghlz.supabase.co/functions/v1/create-payment-intent";
 
-const CheckoutForm = ({setCanEdit, updateJoiners, setPaymentStatus}) => {
+const CheckoutForm = ({setCanEdit, updateJoiners, setPaymentStatus, amount}) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
@@ -33,7 +33,7 @@ const CheckoutForm = ({setCanEdit, updateJoiners, setPaymentStatus}) => {
         headers: { 
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ amount: 1000, currency: 'usd' }), // Adjust amount and currency as needed
+        body: JSON.stringify({ amount: amount * 100, currency: 'usd' }), // Adjust amount and currency as needed
       });
 
       if (!response.ok) {

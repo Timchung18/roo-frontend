@@ -3,6 +3,11 @@ import { TextField, Button, MenuItem, Typography } from '@mui/material';
 import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { DateTime } from 'luxon';
+import CheckoutForm from './CheckoutForm';
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_TEST_PUBLIC_KEY);
 
 const CreateEvent = ({user}) => {
   const navigate = useNavigate();
@@ -13,7 +18,13 @@ const CreateEvent = ({user}) => {
     restaurantId: ''
   });
   const [restaurants, setRestaurants] = useState([]);
+  const [fundingPerPerson, setFundingPerPerson] = useState(10);
   const [tableError, setTableError] = useState('');
+  const [eventId, setEventId] = useState('');
+
+  const [paymentStatus, setPaymentStatus] = useState("none");
+  const [canEdit, setCanEdit] = useState(true);
+  const [canPay, setCanPay] = useState(false);
 
   const timezone = "America/Los_Angeles";
 
@@ -83,7 +94,7 @@ const CreateEvent = ({user}) => {
           event_date: eventData.eventDate,
           event_time: eventData.eventTime,
           description: eventData.eventDescription,
-          number_of_seats_taken: 0,
+          number_of_seats_taken: 1,
           number_of_seats_requested: eventData.numberOfSeats,
           table_id: tableQueryRes[0].table_id,
           event_date_time: timestamp,
@@ -98,10 +109,16 @@ const CreateEvent = ({user}) => {
         // console.log(insertEventData[0].link);
         // const baseUrl = "http://localhost:3000/join/";
         // const uniqueUrl = `${baseUrl}${insertEventData[0].link}`;
-        const res = await updateJoinersTable(insertEventData[0].event_id, user.user_id);
-        if (res === 0) {
-          navigate(`/`);
-        }
+        setEventId(insertEventData[0].event_id);
+        setCanPay(true);
+        
+        // const res = await updateJoinersTable();
+        // if (res === 0) {
+
+        //   navigate(`/`);
+        // } else {
+        //   console.error("Error updating database (joiners table)");
+        // }
       }
       
 
@@ -113,12 +130,12 @@ const CreateEvent = ({user}) => {
     
   };
 
-  const updateJoinersTable = async (eventId, joinerUserId) => {
+  const updateJoinersTable = async () => {
     const { data, error } = await supabase
       .from('joiners')
       .insert([{
         event_id: eventId,
-        joiner_user_id: joinerUserId,
+        joiner_user_id: user.user_id,
         response: "yes",
       }]);
     
@@ -151,7 +168,12 @@ const CreateEvent = ({user}) => {
     
   };
 
-
+  useEffect(() => {
+    // Perform some side effect, e.g., fetch data
+    if (paymentStatus === "success") {
+      navigate(`/`);
+    }
+  }, [paymentStatus]); 
 
   return (
     <div style={{ padding: 20 }}>
@@ -231,6 +253,11 @@ const CreateEvent = ({user}) => {
         {tableError && <Typography color="error"> {tableError} </Typography>}
         <Button variant="contained" color="primary" type="submit">Create Event</Button>
       </form>
+      {canPay && 
+        <Elements stripe={stripePromise}>
+          <CheckoutForm setCanEdit={setCanEdit} updateJoiners={updateJoinersTable} setPaymentStatus={setPaymentStatus} amount={fundingPerPerson} />      
+        </Elements>
+      }
     </div>
   );
 };
