@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import ReservationTimeline from './ReservationTimeline';
 
 const RestaurantHomePage = ({user}) => {
   const [restaurant, setRestaurant] = useState(null);
@@ -25,7 +26,7 @@ const RestaurantHomePage = ({user}) => {
         if (restaurantError) throw restaurantError;
 
         setRestaurant(restaurantData);
-        await fetchEvents(restaurantData);
+        await fetchEventsAndTables(restaurantData);
         console.log(events);
       } catch (err) {
         setError(err.message);
@@ -38,7 +39,7 @@ const RestaurantHomePage = ({user}) => {
   }, []);
 
   
-  const fetchEvents = async (restaurantData) => {
+  const fetchEventsAndTables = async (restaurantData) => {
     try {
       const restaurantId = restaurantData.restaurant_id; 
 
@@ -105,61 +106,7 @@ const RestaurantHomePage = ({user}) => {
     }
   };
 
-  const reservations = [
-    { startTime: "12:00", endTime: "13:30", table: 1, customer: "John Doe", partySize: 4, status: "Confirmed" },
-    { startTime: "13:00", endTime: "14:00", table: 2, customer: "Jane Smith", partySize: 2, status: "Pending" },
-    { startTime: "14:00", endTime: "15:00", table: 3, customer: "Michael Lee", partySize: 3, status: "Confirmed" },
-    { startTime: "15:00", endTime: "16:30", table: 1, customer: "Sarah Connor", partySize: 3, status: "Cancelled" },
-    { startTime: "16:00", endTime: "17:30", table: 2, customer: "Alice Johnson", partySize: 5, status: "Confirmed" },
-    { startTime: "12:30", endTime: "14:00", table: 4, customer: "David Clark", partySize: 2, status: "Pending" },
-    { startTime: "13:30", endTime: "15:30", table: 5, customer: "Emma Wilson", partySize: 6, status: "Confirmed" },
-    { startTime: "17:00", endTime: "18:00", table: 3, customer: "James Brown", partySize: 4, status: "Confirmed" },
-    { startTime: "16:00", endTime: "18:00", table: 5, customer: "Linda Taylor", partySize: 3, status: "Cancelled" },
-    { startTime: "12:00", endTime: "13:00", table: 2, customer: "Charlie Adams", partySize: 2, status: "Confirmed" },
-  ];
   
-  // Helper function to convert time (HH:MM) to a fractional hour (e.g., 13:30 -> 13.5)
-  const timeToDecimal = (time) => {
-    const [hours, minutes] = time.split(":").map(Number);
-    return hours + minutes / 60;
-  };
-
-  // Total range of the timeline (e.g., from 12:00 to 18:00 = 6 hours)
-  const timelineStart = 12;
-  const timelineEnd = 18;
-  const timelineRange = timelineEnd - timelineStart;
-    
-  // Calculate the width and position based on the start and end time of the reservation
-  const getReservationStyle = (startTime, endTime) => {
-    const start = timeToDecimal(startTime);
-    const end = timeToDecimal(endTime);
-    const duration = end - start;
-    return {
-      left: `${((start - timelineStart) / timelineRange) * 100}%`, // Position based on start time relative to the total timeline
-      width: `${(duration / timelineRange) * 100}%`, // Width based on the duration relative to the total timeline
-    };
-  };
-  const times = ["12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM"];
-  const tableNumbers = [1, 2, 3, 4, 5];
-
-  const getStatusClasses = (status) => {
-    switch (status) {
-      case "Confirmed":
-        return "border-green-500 bg-green-100 text-green-800";
-      case "Pending":
-        return "border-yellow-500 bg-yellow-100 text-yellow-800";
-      case "Cancelled":
-        return "border-red-500 bg-red-100 text-red-800";
-      default:
-        return "";
-    }
-  };
-
-  const getReservationForTimeAndTable = (time, table) => {
-    return reservations.find(
-      (reservation) => reservation.time === time && reservation.table === table
-    );
-  };
 
 
   if (loading) return <p>Loading restaurant data...</p>;
@@ -223,49 +170,7 @@ const RestaurantHomePage = ({user}) => {
     );
   };
 
-  const ReservationTimeline = () => {
-    return (
-      <div className="p-4">
-        {/* Time labels at the top of the timeline */}
-        <div className="flex justify-between mb-4 ml-16">
-          {["12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"].map((time, index) => (
-            <div key={index} className="font-bold">
-              {time}
-            </div>
-          ))}
-        </div>
-        
-        {/* Timeline Grid (Y-Axis as tables, continuous X-Axis as time) */}
-        {Array.from({ length: 5 }, (_, i) => i + 1).map((table) => (
-          <div key={table} className="relative mb-4">
-            {/* Table Label */}
-            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 font-bold">
-              Table {table}
-            </div>
-            
-            {/* Time Axis */}
-            <div className="flex items-center relative ml-16 h-16 border-t border-gray-300">
-              {/* Display the reservation blocks for this table */}
-              {reservations
-                .filter((reservation) => reservation.table === table)
-                .map((reservation, index) => (
-                  <div
-                    key={index}
-                    className={`absolute h-10 flex items-center justify-center border rounded-lg ${getStatusClasses(reservation.status)}`}
-                    style={getReservationStyle(reservation.startTime, reservation.endTime)}
-                  >
-                    <div className="text-center">
-                      <p className="font-bold">{reservation.customer}</p>
-                      <p className="text-sm">Party of {reservation.partySize}</p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
+  
   
   return (
     <div className='flex-column text-center mx-auto min-h-screen'>
@@ -320,7 +225,7 @@ const RestaurantHomePage = ({user}) => {
 
       </div>
       
-      <ReservationTimeline/>
+      {events && tables && <ReservationTimeline reservations={events} tables={tables}/>}
       
     </div>
   );
